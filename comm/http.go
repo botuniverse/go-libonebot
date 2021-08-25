@@ -60,10 +60,10 @@ func StartHTTPTask(host string, port uint16) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 HTTP 通信方式, 监听地址: %v", addr)
 
-	httpComm := &httpComm{}
+	comm := &httpComm{}
 	mux := http.NewServeMux()
-	mux.HandleFunc("/status", httpComm.handleStatusPage)
-	mux.HandleFunc("/", httpComm.handleActionRequest)
+	mux.HandleFunc("/status", comm.handleStatusPage)
+	mux.HandleFunc("/", comm.handleActionRequest)
 	if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
 		log.Error(err)
 		log.Error("HTTP 通信方式启动失败")
