@@ -15,7 +15,7 @@ import (
 type httpComm struct {
 }
 
-func (h *httpComm) handleActionRequest(w http.ResponseWriter, r *http.Request) {
+func (comm *httpComm) handleActionRequest(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("HTTP Request: %v", r)
 
 	if r.Method != "POST" {
@@ -51,7 +51,7 @@ func (h *httpComm) handleActionRequest(w http.ResponseWriter, r *http.Request) {
 	w.Write(bodyBytes)
 }
 
-func (h *httpComm) handleStatusPage(w http.ResponseWriter, r *http.Request) {
+func (comm *httpComm) handleStatusPage(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>Everything is OK!</h1>"))
 }
 
