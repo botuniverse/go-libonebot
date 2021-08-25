@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/botuniverse/go-libonebot/utils"
@@ -64,10 +63,11 @@ func StartHTTPTask(host string, port uint16) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", comm.handleStatusPage)
 	mux.HandleFunc("/", comm.handleActionRequest)
-	if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
-		log.Error(err)
-		log.Error("HTTP 通信方式启动失败")
-		os.Exit(1)
-	}
-	log.Info("HTTP 通信方式已退出")
+
+	go func() {
+		if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
+			log.Errorf("HTTP 通信方式启动失败, 错误: %v", err)
+		}
+		log.Info("HTTP 通信方式已退出")
+	}()
 }
