@@ -1,6 +1,8 @@
 package comm
 
 import (
+	"bytes"
+	"net/http"
 	"net/url"
 
 	"github.com/botuniverse/go-libonebot/event"
@@ -22,9 +24,11 @@ func StartHTTPWebhookTask(urlString string, eventEmitter *event.EventEmitter) {
 	}
 
 	eventChan := eventEmitter.OpenOutChan()
+	httpClient := &http.Client{}
 	go func() {
 		for eventBytes := range eventChan {
-			log.Debugf("EventBytes: %v", eventBytes)
+			// TODO: use special User-Agent
+			httpClient.Post(urlString, "application/json", bytes.NewReader(eventBytes))
 		}
 		log.Warnf("HTTP Webhook (%v) 已关闭", urlString)
 	}()
