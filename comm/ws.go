@@ -3,6 +3,7 @@ package comm
 import (
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/botuniverse/go-libonebot/event"
 	"github.com/botuniverse/go-libonebot/utils"
@@ -12,6 +13,7 @@ import (
 )
 
 type wsComm struct {
+	eventEmitter *event.EventEmitter
 }
 
 var upgrader = websocket.Upgrader{
@@ -30,35 +32,43 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	log.Infof("WebSocket 连接成功")
 	defer conn.Close()
 
-	ws_chan := make(chan []byte) // TODO: channel size
+	// protect concurrent writes to the same connection
+	connWriteLock := sync.Mutex{}
+
+	eventChan := comm.eventEmitter.OpenOutChan()
+	defer comm.eventEmitter.CloseOutChan(eventChan)
 	go func() {
-		for {
-			_, message, err := conn.ReadMessage()
-			if err != nil {
-				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-					log.Infof("WebSocket 连接断开")
-				} else {
-					log.Errorf("WebSocket 连接异常断开, 错误: %v", err)
-				}
-				break
-			}
-			ws_chan <- message
+		// keep pushing events throught the connection
+		for eventBytes := range eventChan {
+			connWriteLock.Lock()
+			conn.WriteMessage(websocket.TextMessage, eventBytes)
+			connWriteLock.Unlock()
 		}
 	}()
 
 	for {
-		select {
-		case messageBytes := <-ws_chan:
-			message := utils.BytesToString(messageBytes)
-			log.Debugf("WebSocket message: %v", message)
-			if !gjson.Valid(message) {
-				log.Warnf("Action 请求体不是合法的 JSON, 已忽略")
-				continue
+		// this is the only one place we read from the connection, no need to lock
+		_, messageBytes, err := conn.ReadMessage()
+		if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+				log.Infof("WebSocket 连接断开")
+			} else {
+				log.Errorf("WebSocket 连接异常断开, 错误: %v", err)
 			}
-			actionRequest := gjson.Parse(message)
-			actionResponse := handleAction(actionRequest)
-			conn.WriteMessage(websocket.TextMessage, utils.StringToBytes(actionResponse.String()))
+			break
 		}
+
+		message := utils.BytesToString(messageBytes)
+		log.Debugf("WebSocket message: %v", message)
+		if !gjson.Valid(message) {
+			log.Warnf("Action 请求体不是合法的 JSON, 已忽略")
+			continue
+		}
+		actionRequest := gjson.Parse(message)
+		actionResponse := handleAction(actionRequest)
+		connWriteLock.Lock()
+		conn.WriteMessage(websocket.TextMessage, utils.StringToBytes(actionResponse.String()))
+		connWriteLock.Unlock()
 	}
 }
 
@@ -67,7 +77,7 @@ func StartWSTask(host string, port uint16, eventEmitter *event.EventEmitter) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 
-	comm := &wsComm{}
+	comm := &wsComm{eventEmitter: eventEmitter}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
 
