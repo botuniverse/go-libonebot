@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/botuniverse/go-libonebot/event"
 	"github.com/botuniverse/go-libonebot/utils"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -62,7 +63,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 }
 
 // Start a WebSocket commmunication task.
-func StartWSTask(host string, port uint16) {
+func StartWSTask(host string, port uint16, eventEmitter *event.EventEmitter) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 
