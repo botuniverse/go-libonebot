@@ -17,20 +17,20 @@ type httpComm struct {
 func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("HTTP request: %v", r)
 
-	// Reject unsupported methods
+	// reject unsupported methods
 	if r.Method != "POST" && r.Method != "GET" {
 		log.Warnf("Action 只支持通过 POST 方式请求")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Handle GET requests
+	// handle GET requests
 	if r.Method == "GET" {
 		w.Write([]byte("<h1>It works!</h1>"))
 		return
 	}
 
-	// Reject unsupported content types
+	// reject unsupported content types
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 		log.Warnf("Action 请求体 MIME 类型必须是 application/json")
 		w.WriteHeader(http.StatusBadRequest)
