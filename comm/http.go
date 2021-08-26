@@ -39,7 +39,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Warnf("获取 Action 请求体失败, 错误: %v", err)
+		log.Warnf("Action 请求体获取失败, 错误: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
