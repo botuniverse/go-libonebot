@@ -61,11 +61,6 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleAction(request gjson.Result) gjson.Result {
-	// TODO: now it simply return the request
-	return request
-}
-
 // Start a WebSocket commmunication task.
 func StartWSTask(host string, port uint16) {
 	addr := fmt.Sprintf("%s:%d", host, port)

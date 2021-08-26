@@ -14,15 +14,25 @@ import (
 type httpComm struct {
 }
 
-func (comm *httpComm) handleActionRequest(w http.ResponseWriter, r *http.Request) {
-	log.Debugf("HTTP Request: %v", r)
+func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("HTTP request: %v", r)
 
-	if r.Method != "POST" {
-		log.Warn("Action 只支持通过 POST 方式请求")
+	// Reject unsupported methods
+	if r.Method != "POST" && r.Method != "GET" {
+		log.Warnf("Action 只支持通过 POST 方式请求")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
-	} else if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
-		log.Warn("Action 请求体 MIME 类型必须是 application/json")
+	}
+
+	// Handle GET requests
+	if r.Method == "GET" {
+		w.Write([]byte("<h1>It works!</h1>"))
+		return
+	}
+
+	// Reject unsupported content types
+	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
+		log.Warnf("Action 请求体 MIME 类型必须是 application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -35,39 +45,33 @@ func (comm *httpComm) handleActionRequest(w http.ResponseWriter, r *http.Request
 	}
 
 	body := utils.BytesToString(bodyBytes)
-	log.Debugf("HTTP Request Body: %v", body)
+	log.Debugf("HTTP request body: %v", body)
 	if !gjson.Valid(body) {
-		log.Warn("Action 请求体不是合法的 JSON")
+		log.Warnf("Action 请求体不是合法的 JSON")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	actionRequest := gjson.Parse(body)
-	log.Debugf("Action Request: %v", actionRequest)
-
+	actionResponse := handleAction(actionRequest)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Write(bodyBytes)
-}
-
-func (comm *httpComm) handleStatusPage(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("<h1>Everything is OK!</h1>"))
+	w.Write(utils.StringToBytes(actionResponse.String()))
 }
 
 // Start an HTTP communication task.
 func StartHTTPTask(host string, port uint16) {
 	addr := fmt.Sprintf("%s:%d", host, port)
-	log.Infof("正在启动 HTTP 通信方式, 监听地址: %v", addr)
+	log.Infof("正在启动 HTTP (%v)...", addr)
 
 	comm := &httpComm{}
 	mux := http.NewServeMux()
-	mux.HandleFunc("/status", comm.handleStatusPage)
-	mux.HandleFunc("/", comm.handleActionRequest)
+	mux.HandleFunc("/", comm.handle)
 
 	go func() {
 		if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
-			log.Errorf("HTTP 通信方式启动失败, 错误: %v", err)
+			log.Errorf("HTTP (%v) 启动失败, 错误: %v", addr, err)
 		}
-		log.Info("HTTP 通信方式已退出")
+		log.Infof("HTTP (%v) 已关闭", addr)
 	}()
 }
