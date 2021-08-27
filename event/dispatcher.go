@@ -40,12 +40,18 @@ func (dispatcher *EventDispatcher) CloseOutChan(outCh <-chan []byte) {
 	}
 }
 
-func (dispatcher *EventDispatcher) Dispatch(event anyEvent) {
+func (dispatcher *EventDispatcher) Dispatch(event AnyEvent) bool {
 	log.Debugf("Event: %#v", event)
+
+	if !event.TryFixUp() {
+		log.Warnf("事件字段值无效")
+		return false
+	}
+
 	jsonBytes, err := json.Marshal(event)
 	if err != nil {
 		log.Warnf("事件序列化失败, 错误: %v", err)
-		return
+		return false
 	}
 
 	dispatcher.outChansLock.RLock() // use read lock to allow emitting events concurrently
@@ -53,4 +59,5 @@ func (dispatcher *EventDispatcher) Dispatch(event anyEvent) {
 	for _, ch := range dispatcher.outChans {
 		ch <- jsonBytes
 	}
+	return true
 }

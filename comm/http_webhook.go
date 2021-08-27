@@ -28,6 +28,7 @@ func StartHTTPWebhookTask(urlString string, eventDispatcher *event.EventDispatch
 	go func() {
 		for eventBytes := range eventChan {
 			// TODO: use special User-Agent
+			// TODO: check status code
 			httpClient.Post(urlString, "application/json", bytes.NewReader(eventBytes))
 		}
 		log.Warnf("HTTP Webhook (%v) 已关闭", urlString)
