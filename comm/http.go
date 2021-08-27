@@ -13,6 +13,7 @@ import (
 )
 
 type httpComm struct {
+	actionMux *action.ActionMux
 }
 
 func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
@@ -54,18 +55,20 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	actionRequest := gjson.Parse(body)
-	actionResponse := action.HandleAction(actionRequest)
+	actionResponse := comm.actionMux.HandleRequest(actionRequest)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(utils.StringToBytes(actionResponse.String()))
 }
 
 // Start an HTTP communication task.
-func StartHTTPTask(host string, port uint16) {
+func StartHTTPTask(host string, port uint16, actionMux *action.ActionMux) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 HTTP (%v)...", addr)
 
-	comm := &httpComm{}
+	comm := &httpComm{
+		actionMux: actionMux,
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
 

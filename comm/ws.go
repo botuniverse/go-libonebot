@@ -14,6 +14,7 @@ import (
 )
 
 type wsComm struct {
+	actionMux       *action.ActionMux
 	eventDispatcher *event.EventDispatcher
 }
 
@@ -66,7 +67,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		actionRequest := gjson.Parse(message)
-		actionResponse := action.HandleAction(actionRequest)
+		actionResponse := comm.actionMux.HandleRequest(actionRequest)
 		connWriteLock.Lock()
 		conn.WriteMessage(websocket.TextMessage, utils.StringToBytes(actionResponse.String()))
 		connWriteLock.Unlock()
@@ -74,11 +75,14 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 }
 
 // Start a WebSocket commmunication task.
-func StartWSTask(host string, port uint16, eventDispatcher *event.EventDispatcher) {
+func StartWSTask(host string, port uint16, actionMux *action.ActionMux, eventDispatcher *event.EventDispatcher) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 
-	comm := &wsComm{eventDispatcher: eventDispatcher}
+	comm := &wsComm{
+		actionMux:       actionMux,
+		eventDispatcher: eventDispatcher,
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
 

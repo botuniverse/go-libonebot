@@ -11,16 +11,19 @@ type ActionMux struct {
 }
 
 func NewActionMux(prefix string) *ActionMux {
-	return &ActionMux{prefix: prefix}
+	return &ActionMux{
+		prefix:   prefix,
+		handlers: map[string]Handler{},
+	}
 }
 
 type Handler interface {
-	HandleAction()
+	HandleRequest()
 }
 
 type HandlerFunc func()
 
-func (handler HandlerFunc) HandleAction() {
+func (handler HandlerFunc) HandleRequest() {
 	handler()
 }
 
@@ -42,7 +45,8 @@ func (mux *ActionMux) HandleExtended(action string, handler HandlerFunc) {
 }
 
 // TODO: input and output types
-func HandleAction(request gjson.Result) gjson.Result {
+func (mux *ActionMux) HandleRequest(request gjson.Result) gjson.Result {
+	log.Debugf("handlers: %#v", mux.handlers)
 	log.Debugf("Action request: %v", request)
 	// TODO: now it simply return the request
 	return request

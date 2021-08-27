@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/botuniverse/go-libonebot/action"
 	"github.com/botuniverse/go-libonebot/event"
 	log "github.com/sirupsen/logrus"
 )
@@ -14,7 +15,11 @@ type OneBotDummy struct {
 func main() {
 	log.SetLevel(log.DebugLevel)
 
-	ob := &OneBotDummy{OneBot: NewOneBot()}
+	ob := &OneBotDummy{OneBot: NewOneBot("dummy")}
+
+	ob.ActionMux.HandleFunc(action.ActionGetVersion, func() {
+		log.Debugf("ActionGetVersion")
+	})
 
 	go func() {
 		for {
