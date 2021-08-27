@@ -11,13 +11,13 @@ import (
 func main() {
 	log.SetLevel(log.DebugLevel)
 
-	eventEmitter := event.NewEventEmitter()
+	eventDispatcher := event.NewEventDispatcher()
 	comm.StartHTTPTask("127.0.0.1", 5700)
-	comm.StartWSTask("127.0.0.1", 6700, eventEmitter)
-	comm.StartHTTPWebhookTask("http://127.0.0.1:8080", eventEmitter)
+	comm.StartWSTask("127.0.0.1", 6700, eventDispatcher)
+	comm.StartHTTPWebhookTask("http://127.0.0.1:8080", eventDispatcher)
 
 	time.Sleep(time.Duration(3) * time.Second)
-	eventEmitter.Emit(
+	eventDispatcher.Dispatch(
 		&event.MessageEvent{
 			Event: event.Event{
 				Platform:   "qq",

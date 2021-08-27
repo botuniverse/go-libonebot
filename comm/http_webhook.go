@@ -10,7 +10,7 @@ import (
 )
 
 // Start an HTTP Webhook communication task.
-func StartHTTPWebhookTask(urlString string, eventEmitter *event.EventEmitter) {
+func StartHTTPWebhookTask(urlString string, eventDispatcher *event.EventDispatcher) {
 	log.Infof("正在启动 HTTP Webhook (%v)...", urlString)
 
 	uri, err := url.Parse(urlString)
@@ -23,7 +23,7 @@ func StartHTTPWebhookTask(urlString string, eventEmitter *event.EventEmitter) {
 		return
 	}
 
-	eventChan := eventEmitter.OpenOutChan()
+	eventChan := eventDispatcher.OpenOutChan()
 	httpClient := &http.Client{}
 	go func() {
 		for eventBytes := range eventChan {
