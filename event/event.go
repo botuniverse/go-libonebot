@@ -31,7 +31,7 @@ func (e *Event) TryFixUp() bool {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
-	if e.Platform == "" || e.SelfID == "" || e.Type.string != "" || e.DetailType == "" {
+	if e.Platform == "" || e.SelfID == "" || e.Type.string == "" || e.DetailType == "" {
 		return false
 	}
 	if e.Time == 0 {
