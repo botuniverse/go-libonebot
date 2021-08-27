@@ -33,7 +33,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	// protect concurrent writes to the same connection
-	connWriteLock := sync.Mutex{}
+	connWriteLock := &sync.Mutex{}
 
 	eventChan := comm.eventDispatcher.OpenOutChan()
 	defer comm.eventDispatcher.CloseOutChan(eventChan)
