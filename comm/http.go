@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/botuniverse/go-libonebot/action"
 	"github.com/botuniverse/go-libonebot/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -53,7 +54,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	actionRequest := gjson.Parse(body)
-	actionResponse := handleAction(actionRequest)
+	actionResponse := action.HandleAction(actionRequest)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(utils.StringToBytes(actionResponse.String()))

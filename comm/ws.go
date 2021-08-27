@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/botuniverse/go-libonebot/action"
 	"github.com/botuniverse/go-libonebot/event"
 	"github.com/botuniverse/go-libonebot/utils"
 	"github.com/gorilla/websocket"
@@ -65,7 +66,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		actionRequest := gjson.Parse(message)
-		actionResponse := handleAction(actionRequest)
+		actionResponse := action.HandleAction(actionRequest)
 		connWriteLock.Lock()
 		conn.WriteMessage(websocket.TextMessage, utils.StringToBytes(actionResponse.String()))
 		connWriteLock.Unlock()
