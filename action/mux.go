@@ -27,11 +27,11 @@ func (handler HandlerFunc) HandleRequest() {
 	handler()
 }
 
-func (mux *ActionMux) HandleFunc(action action, handler func()) {
+func (mux *ActionMux) HandleFunc(action coreAction, handler func()) {
 	mux.Handle(action, HandlerFunc(handler))
 }
 
-func (mux *ActionMux) Handle(action action, handler Handler) {
+func (mux *ActionMux) Handle(action coreAction, handler Handler) {
 	mux.handlers[action.string] = handler
 }
 
