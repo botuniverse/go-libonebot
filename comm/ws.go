@@ -64,6 +64,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("WebSocket message: %v", message)
 		if !gjson.Valid(message) {
 			log.Warnf("Action 请求体不是合法的 JSON, 已忽略")
+			// TODO: return error result
 			continue
 		}
 		actionRequest := gjson.Parse(message)

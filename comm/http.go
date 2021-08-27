@@ -28,6 +28,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	// handle GET requests
 	if r.Method == "GET" {
+		// TODO
 		w.Write([]byte("<h1>It works!</h1>"))
 		return
 	}
@@ -36,6 +37,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 		log.Warnf("Action 请求体 MIME 类型必须是 application/json")
 		w.WriteHeader(http.StatusBadRequest)
+		// TODO: return error result
 		return
 	}
 
@@ -43,6 +45,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Warnf("Action 请求体获取失败, 错误: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
+		// TODO: return error result
 		return
 	}
 
@@ -51,6 +54,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	if !gjson.Valid(body) {
 		log.Warnf("Action 请求体不是合法的 JSON")
 		w.WriteHeader(http.StatusBadRequest)
+		// TODO: return error result
 		return
 	}
 
