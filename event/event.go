@@ -5,13 +5,13 @@ import (
 	"time"
 )
 
-type Type string
+type type_ struct{ string }
 
-const (
-	TypeMessage Type = "message"
-	TypeNotice  Type = "notice"
-	TypeRequest Type = "request"
-	TypeMeta    Type = "meta"
+var (
+	TypeMessage type_ = type_{"message"}
+	TypeNotice  type_ = type_{"notice"}
+	TypeRequest type_ = type_{"request"}
+	TypeMeta    type_ = type_{"meta"}
 )
 
 type Event struct {
@@ -19,7 +19,7 @@ type Event struct {
 	Platform   string `json:"platform"`
 	Time       int64  `json:"time"`
 	SelfID     string `json:"self_id"`
-	Type       Type   `json:"type"`
+	Type       type_  `json:"type"`
 	DetailType string `json:"detail_type"`
 }
 
@@ -31,7 +31,7 @@ func (e *Event) TryFixUp() bool {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
-	if e.Platform == "" || e.SelfID == "" || e.Type == "" || e.DetailType == "" {
+	if e.Platform == "" || e.SelfID == "" || e.Type.string != "" || e.DetailType == "" {
 		return false
 	}
 	if e.Time == 0 {
