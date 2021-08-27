@@ -96,7 +96,6 @@ func (mux *ActionMux) ParseRequest(actionBody string) (Request, error) {
 	return r, nil
 }
 
-// TODO: input and output types
 func (mux *ActionMux) HandleRequest(r *Request) Response {
 	log.Debugf("handlers: %#v", mux.handlers)
 	log.Debugf("Action request: %#v", r)
