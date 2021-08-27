@@ -1,11 +1,16 @@
 package event
 
 import (
+	"encoding/json"
 	"sync"
 	"time"
 )
 
 type type_ struct{ string }
+
+func (t type_) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.string)
+}
 
 var (
 	TypeMessage type_ = type_{"message"}

@@ -1,6 +1,12 @@
 package action
 
+import "encoding/json"
+
 type ResponseStatus struct{ string }
+
+func (status ResponseStatus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(status.string)
+}
 
 var (
 	StatusOK     = ResponseStatus{"ok"}
