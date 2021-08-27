@@ -9,7 +9,6 @@ import (
 	"github.com/botuniverse/go-libonebot/action"
 	"github.com/botuniverse/go-libonebot/utils"
 	log "github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
 )
 
 type httpComm struct {
@@ -51,15 +50,15 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	body := utils.BytesToString(bodyBytes)
 	log.Debugf("HTTP request body: %v", body)
-	if !gjson.Valid(body) {
-		log.Warnf("Action 请求体不是合法的 JSON")
+	actionRequest, err := comm.actionMux.ParseRequest(body)
+	if err != nil {
+		log.Warnf("Action 请求解析失败, 错误: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		// TODO: return error result
 		return
 	}
 
-	actionRequest := gjson.Parse(body)
-	actionResponse := comm.actionMux.HandleRequest(actionRequest)
+	actionResponse := comm.actionMux.HandleRequest(&actionRequest)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(utils.StringToBytes(actionResponse.String()))

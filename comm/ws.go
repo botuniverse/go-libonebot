@@ -10,7 +10,6 @@ import (
 	"github.com/botuniverse/go-libonebot/utils"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
 )
 
 type wsComm struct {
@@ -62,13 +61,13 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 
 		message := utils.BytesToString(messageBytes)
 		log.Debugf("WebSocket message: %v", message)
-		if !gjson.Valid(message) {
-			log.Warnf("Action 请求体不是合法的 JSON, 已忽略")
+		actionRequest, err := comm.actionMux.ParseRequest(message)
+		if err != nil {
+			log.Warnf("Action 请求解析失败, 错误: %v", err)
 			// TODO: return error result
 			continue
 		}
-		actionRequest := gjson.Parse(message)
-		actionResponse := comm.actionMux.HandleRequest(actionRequest)
+		actionResponse := comm.actionMux.HandleRequest(&actionRequest)
 		connWriteLock.Lock()
 		conn.WriteMessage(websocket.TextMessage, utils.StringToBytes(actionResponse.String()))
 		connWriteLock.Unlock()
