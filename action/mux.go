@@ -97,9 +97,14 @@ func (mux *ActionMux) ParseRequest(actionBody string) (Request, error) {
 }
 
 // TODO: input and output types
-func (mux *ActionMux) HandleRequest(r *Request) gjson.Result {
+func (mux *ActionMux) HandleRequest(r *Request) Response {
 	log.Debugf("handlers: %#v", mux.handlers)
 	log.Debugf("Action request: %#v", r)
 	// TODO: now it simply return the request
-	return r.Params
+	return Response{
+		Status:  StatusOK,
+		RetCode: RetCodeOK,
+		Data:    r.Params.Value(),
+		Message: "",
+	}
 }

@@ -69,7 +69,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		}
 		actionResponse := comm.actionMux.HandleRequest(&actionRequest)
 		connWriteLock.Lock()
-		conn.WriteMessage(websocket.TextMessage, utils.StringToBytes(actionResponse.String()))
+		conn.WriteJSON(actionResponse)
 		connWriteLock.Unlock()
 	}
 }

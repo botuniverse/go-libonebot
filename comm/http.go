@@ -1,6 +1,7 @@
 package comm
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -61,7 +62,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	actionResponse := comm.actionMux.HandleRequest(&actionRequest)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Write(utils.StringToBytes(actionResponse.String()))
+	json.NewEncoder(w).Encode(actionResponse)
 }
 
 // Start an HTTP communication task.
