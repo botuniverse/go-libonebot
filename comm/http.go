@@ -16,6 +16,12 @@ type httpComm struct {
 	actionMux *action.ActionMux
 }
 
+func (comm *httpComm) handleGET(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("<h1>It works!</h1>"))
+}
+
 func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("HTTP request: %v", r)
 
@@ -28,24 +34,23 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	// handle GET requests
 	if r.Method == "GET" {
-		// TODO
-		w.Write([]byte("<h1>It works!</h1>"))
+		comm.handleGET(w, r)
 		return
 	}
 
+	// once we got the action HTTP request, we respond "200 OK"
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+
 	// reject unsupported content types
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
-		log.Warnf("Action 请求体 MIME 类型必须是 application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		// TODO: return error result
+		httpFailed(w, action.RetCodeInvalidRequest, "Action 请求体 MIME 类型必须是 application/json")
 		return
 	}
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Warnf("Action 请求体获取失败, 错误: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		// TODO: return error result
+		httpFailed(w, action.RetCodeInvalidRequest, "Action 请求体读取失败: %v", err)
 		return
 	}
 
@@ -53,16 +58,18 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("HTTP request body: %v", body)
 	actionRequest, err := comm.actionMux.ParseRequest(body)
 	if err != nil {
-		log.Warnf("Action 请求解析失败, 错误: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		// TODO: return error result
+		httpFailed(w, action.RetCodeInvalidRequest, "Action 请求解析失败: %v", err)
 		return
 	}
 
 	actionResponse := comm.actionMux.HandleRequest(&actionRequest)
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(actionResponse)
+}
+
+func httpFailed(w http.ResponseWriter, retcode int, errFormat string, args ...interface{}) {
+	errMsg := fmt.Sprintf(errFormat, args...)
+	log.Warnf(errMsg)
+	json.NewEncoder(w).Encode(action.FailedResponse(retcode, errMsg))
 }
 
 // Start an HTTP communication task.

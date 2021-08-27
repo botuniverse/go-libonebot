@@ -62,12 +62,15 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		message := utils.BytesToString(messageBytes)
 		log.Debugf("WebSocket message: %v", message)
 		actionRequest, err := comm.actionMux.ParseRequest(message)
+		var actionResponse action.Response
 		if err != nil {
-			log.Warnf("Action 请求解析失败, 错误: %v", err)
-			// TODO: return error result
-			continue
+			errMsg := fmt.Sprintf("Action 请求解析失败: %v", err)
+			log.Warnf(errMsg)
+			actionResponse = action.FailedResponse(action.RetCodeInvalidRequest, errMsg)
+		} else {
+			actionResponse = comm.actionMux.HandleRequest(&actionRequest)
 		}
-		actionResponse := comm.actionMux.HandleRequest(&actionRequest)
+
 		connWriteLock.Lock()
 		conn.WriteJSON(actionResponse)
 		connWriteLock.Unlock()
