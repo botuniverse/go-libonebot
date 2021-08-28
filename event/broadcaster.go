@@ -22,9 +22,9 @@ func (broadcaster *Broadcaster) OpenListenChan() <-chan []byte {
 	broadcaster.listenChansLock.Lock()
 	defer broadcaster.listenChansLock.Unlock()
 
-	outCh := make(chan []byte) // TODO: channel size
-	broadcaster.listenChans = append(broadcaster.listenChans, outCh)
-	return outCh
+	ch := make(chan []byte) // TODO: channel size
+	broadcaster.listenChans = append(broadcaster.listenChans, ch)
+	return ch
 }
 
 func (broadcaster *Broadcaster) CloseListenChan(listenCh <-chan []byte) {
