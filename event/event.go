@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"sync"
 	"time"
+
+	"github.com/botuniverse/go-libonebot/message"
 )
 
 type type_ struct{ string }
@@ -47,9 +49,9 @@ func (e *Event) TryFixUp() bool {
 
 type MessageEvent struct {
 	Event
-	UserID  string `json:"user_id"`
-	GroupID string `json:"group_id,omitempty"`
-	Message string `json:"message"`
+	UserID  string          `json:"user_id"`
+	GroupID string          `json:"group_id,omitempty"`
+	Message message.Message `json:"message"`
 }
 
 type NoticeEvent struct {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/botuniverse/go-libonebot/action"
 	"github.com/botuniverse/go-libonebot/event"
+	"github.com/botuniverse/go-libonebot/message"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,7 +41,7 @@ func main() {
 						DetailType: "private",
 					},
 					UserID:  "234",
-					Message: "hello",
+					Message: message.Message{message.TextSegment("hello")},
 				},
 			)
 			time.Sleep(time.Duration(3) * time.Second)
