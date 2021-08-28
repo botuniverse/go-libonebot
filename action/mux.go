@@ -113,9 +113,9 @@ func (mux *Mux) HandleRequest(actionBody string) (resp Response) {
 	// try parse the request from the JSON string
 	r, err := mux.parseRequest(actionBody)
 	if err != nil {
-		errMsg := fmt.Sprintf("Action 请求解析失败: %v", err)
-		log.Warnf(errMsg)
-		w.WriteFailed(RetCodeInvalidRequest, errMsg)
+		err := fmt.Errorf("Action 请求解析失败, 错误: %v", err)
+		log.Warn(err)
+		w.WriteFailed(RetCodeInvalidRequest, err)
 		return
 	}
 	log.Debugf("Action request: %#v", r)
@@ -132,9 +132,9 @@ func (mux *Mux) HandleRequest(actionBody string) (resp Response) {
 
 	handler := (*handlers)[r.Action.Name]
 	if handler == nil {
-		errMsg := fmt.Sprintf("Action `%v` 不存在", r.Action)
-		log.Warnf(errMsg)
-		w.WriteFailed(RetCodeActionNotFound, errMsg)
+		err := fmt.Errorf("Action `%v` 不存在", r.Action)
+		log.Warn(err)
+		w.WriteFailed(RetCodeActionNotFound, err)
 		return
 	}
 

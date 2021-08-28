@@ -1,6 +1,8 @@
 package action
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type ResponseStatus struct{ string }
 
@@ -65,8 +67,8 @@ func (w ResponseWriter) WriteData(data interface{}) {
 	w.resp.Data = data
 }
 
-func (w ResponseWriter) WriteFailed(retCode int, message string) {
+func (w ResponseWriter) WriteFailed(retCode int, err error) {
 	w.resp.Status = StatusFailed
 	w.resp.RetCode = retCode
-	w.resp.Message = message
+	w.resp.Message = err.Error()
 }

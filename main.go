@@ -28,11 +28,11 @@ func main() {
 	ob.ActionMux.HandleFunc(action.ActionSendMessage, func(w action.ResponseWriter, r *action.Request) {
 		userID, err := r.Params.GetString("user_id")
 		if err != nil {
-			w.WriteFailed(action.RetCodeParamError, err.Error()) // TODO
+			w.WriteFailed(action.RetCodeParamError, err)
 		}
 		msg, err := r.Params.GetMessage("message")
 		if err != nil {
-			w.WriteFailed(action.RetCodeParamError, err.Error())
+			w.WriteFailed(action.RetCodeParamError, err)
 		}
 		log.Debugf("Send message: %#v, to %v", msg, userID)
 	})
