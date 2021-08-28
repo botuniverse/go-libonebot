@@ -18,7 +18,11 @@ func main() {
 	ob := &OneBotDummy{OneBot: NewOneBot("dummy")}
 
 	ob.ActionMux.HandleFunc(action.ActionGetVersion, func() {
-		log.Debugf("ActionGetVersion")
+		log.Debugf("Action: get_version")
+	})
+
+	ob.ActionMux.HandleFuncExtended("do_something", func() {
+		log.Debugf("Extended action: do_something")
 	})
 
 	go func() {

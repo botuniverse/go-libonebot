@@ -10,14 +10,16 @@ import (
 )
 
 type Mux struct {
-	prefix   string // prefix for extended actions
-	handlers map[string]Handler
+	prefix           string // prefix for extended actions
+	handlers         map[string]Handler
+	extendedHandlers map[string]Handler
 }
 
 func NewMux(prefix string) *Mux {
 	return &Mux{
-		prefix:   prefix,
-		handlers: map[string]Handler{},
+		prefix:           prefix,
+		handlers:         map[string]Handler{},
+		extendedHandlers: map[string]Handler{},
 	}
 }
 
@@ -45,7 +47,7 @@ func (mux *Mux) HandleFuncExtended(action string, handler func()) {
 
 func (mux *Mux) HandleExtended(action string, handler HandlerFunc) {
 	// if the prefix is empty, then the action name starts with "_"
-	mux.handlers[mux.prefix+"_"+action] = handler
+	mux.extendedHandlers[action] = handler
 }
 
 func validateActionJSON(actionJSON gjson.Result) error {
@@ -78,11 +80,13 @@ func (mux *Mux) parseRequest(body string) (Request, error) {
 	var action Action
 	fullname := bodyJSON.Get("action").String()
 	if strings.HasPrefix(fullname, mux.prefix+"_") {
+		// extended action
 		action = Action{
 			Prefix: mux.prefix,
 			Name:   strings.TrimPrefix(fullname, mux.prefix+"_"),
 		}
 	} else {
+		// core action
 		action = Action{
 			Prefix: "",
 			Name:   fullname,
@@ -99,6 +103,8 @@ func (mux *Mux) parseRequest(body string) (Request, error) {
 
 func (mux *Mux) HandleRequest(actionBody string) Response {
 	log.Debugf("handlers: %#v", mux.handlers)
+	log.Debugf("extendedHandlers: %#v", mux.extendedHandlers)
+
 	r, err := mux.parseRequest(actionBody)
 	if err != nil {
 		errMsg := fmt.Sprintf("Action 请求解析失败: %v", err)
