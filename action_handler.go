@@ -1,4 +1,4 @@
-package libonebot
+package onebot
 
 type Handler interface {
 	HandleAction(ResponseWriter, *Request)

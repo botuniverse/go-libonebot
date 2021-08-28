@@ -1,4 +1,4 @@
-package libonebot
+package onebot
 
 import (
 	"fmt"

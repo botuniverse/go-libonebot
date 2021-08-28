@@ -3,58 +3,58 @@ package main
 import (
 	"time"
 
-	libob "github.com/botuniverse/go-libonebot"
+	ob "github.com/botuniverse/go-libonebot"
 	log "github.com/sirupsen/logrus"
 )
 
 type OneBotDummy struct {
-	*libob.OneBot
+	*ob.OneBot
 }
 
 func main() {
 	log.SetLevel(log.DebugLevel)
 
-	ob := &OneBotDummy{OneBot: libob.NewOneBot("dummy")}
+	obdummy := &OneBotDummy{OneBot: ob.NewOneBot("dummy")}
 
-	ob.ActionMux.HandleFunc(libob.ActionGetVersion, func(w libob.ResponseWriter, r *libob.Request) {
+	obdummy.ActionMux.HandleFunc(ob.ActionGetVersion, func(w ob.ResponseWriter, r *ob.Request) {
 		w.WriteData(map[string]string{
 			"version":         "1.0.0",
 			"onebot_standard": "v12",
 		})
 	})
 
-	ob.ActionMux.HandleFunc(libob.ActionSendMessage, func(w libob.ResponseWriter, r *libob.Request) {
+	obdummy.ActionMux.HandleFunc(ob.ActionSendMessage, func(w ob.ResponseWriter, r *ob.Request) {
 		userID, err := r.Params.GetString("user_id")
 		if err != nil {
-			w.WriteFailed(libob.RetCodeParamError, err)
+			w.WriteFailed(ob.RetCodeParamError, err)
 		}
 		msg, err := r.Params.GetMessage("message")
 		if err != nil {
-			w.WriteFailed(libob.RetCodeParamError, err)
+			w.WriteFailed(ob.RetCodeParamError, err)
 		}
 		log.Debugf("Send message: %#v, to %v", msg, userID)
 	})
 
-	ob.ActionMux.HandleFuncExtended("do_something", func(w libob.ResponseWriter, r *libob.Request) {
+	obdummy.ActionMux.HandleFuncExtended("do_something", func(w ob.ResponseWriter, r *ob.Request) {
 	})
 
 	go func() {
 		for {
-			ob.PushEvent(
-				&libob.MessageEvent{
-					Event: libob.Event{
+			obdummy.PushEvent(
+				&ob.MessageEvent{
+					Event: ob.Event{
 						Platform:   "qq",
 						SelfID:     "123",
-						Type:       libob.EventTypeMessage,
+						Type:       ob.EventTypeMessage,
 						DetailType: "private",
 					},
 					UserID:  "234",
-					Message: libob.Message{libob.TextSegment("hello")},
+					Message: ob.Message{ob.TextSegment("hello")},
 				},
 			)
 			time.Sleep(time.Duration(3) * time.Second)
 		}
 	}()
 
-	ob.Run()
+	obdummy.Run()
 }
