@@ -54,15 +54,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body := utils.BytesToString(bodyBytes)
-	log.Debugf("HTTP request body: %v", body)
-	actionRequest, err := comm.actionMux.ParseRequest(body)
-	if err != nil {
-		httpFailed(w, action.RetCodeInvalidRequest, "Action 请求解析失败: %v", err)
-		return
-	}
-
-	actionResponse := comm.actionMux.HandleRequest(&actionRequest)
+	actionResponse := comm.actionMux.HandleRequest(utils.BytesToString(bodyBytes))
 	json.NewEncoder(w).Encode(actionResponse)
 }
 

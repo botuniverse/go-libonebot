@@ -2,6 +2,7 @@ package action
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -63,41 +64,48 @@ func validateActionJSON(actionJSON gjson.Result) error {
 	return nil
 }
 
-func (mux *ActionMux) ParseRequest(actionBody string) (Request, error) {
-	if !gjson.Valid(actionBody) {
+func (mux *ActionMux) parseRequest(body string) (Request, error) {
+	if !gjson.Valid(body) {
 		return Request{}, errors.New("Action 请求体不是合法的 JSON")
 	}
 
-	actionJSON := gjson.Parse(actionBody)
-	err := validateActionJSON(actionJSON)
+	bodyJSON := gjson.Parse(body)
+	err := validateActionJSON(bodyJSON)
 	if err != nil {
 		return Request{}, err
 	}
 
 	var action Action
-	actionFullname := actionJSON.Get("action").String()
-	if strings.HasPrefix(actionFullname, mux.prefix+"_") {
+	fullname := bodyJSON.Get("action").String()
+	if strings.HasPrefix(fullname, mux.prefix+"_") {
 		action = Action{
 			Prefix: mux.prefix,
-			Name:   strings.TrimPrefix(actionFullname, mux.prefix+"_"),
+			Name:   strings.TrimPrefix(fullname, mux.prefix+"_"),
 		}
 	} else {
 		action = Action{
 			Prefix: "",
-			Name:   actionFullname,
+			Name:   fullname,
 		}
 	}
 
 	r := Request{
 		Action: action,
-		Params: actionJSON.Get("params"),
-		echo:   actionJSON.Get("echo"),
+		Params: bodyJSON.Get("params"),
+		echo:   bodyJSON.Get("echo"),
 	}
 	return r, nil
 }
 
-func (mux *ActionMux) HandleRequest(r *Request) Response {
+func (mux *ActionMux) HandleRequest(actionBody string) Response {
 	log.Debugf("handlers: %#v", mux.handlers)
+	r, err := mux.parseRequest(actionBody)
+	if err != nil {
+		errMsg := fmt.Sprintf("Action 请求解析失败: %v", err)
+		log.Warnf(errMsg)
+		return FailedResponse(RetCodeInvalidRequest, errMsg)
+	}
+
 	log.Debugf("Action request: %#v", r)
 	// TODO: now it simply return the request
 	return Response{
