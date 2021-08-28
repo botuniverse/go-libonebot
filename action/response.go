@@ -17,7 +17,7 @@ const (
 	RetCodeOK = 0
 
 	RetCodeInvalidRequest = 11001
-	RetCodeMissingAction  = 11002
+	RetCodeActionNotFound = 11002
 	RetCodeMissingParam   = 11003
 	RetCodeInvalidParam   = 11004
 
@@ -32,7 +32,7 @@ type Response struct {
 	RetCode int            `json:"retcode"`
 	Data    interface{}    `json:"data"`
 	Message string         `json:"message"`
-	Echo    interface{}    `json:"echo"`
+	Echo    interface{}    `json:"echo,omitempty"`
 }
 
 func OKResponse(data interface{}) Response {
@@ -51,4 +51,23 @@ func FailedResponse(retCode int, message string) Response {
 	}
 }
 
-// TODO: response writer
+type ResponseWriter struct {
+	resp *Response
+}
+
+func (w ResponseWriter) WriteOK() {
+	w.resp.Status = StatusOK
+	w.resp.RetCode = RetCodeOK
+	w.resp.Message = ""
+}
+
+func (w ResponseWriter) WriteData(data interface{}) {
+	w.WriteOK()
+	w.resp.Data = data
+}
+
+func (w ResponseWriter) WriteFailed(retCode int, message string) {
+	w.resp.Status = StatusFailed
+	w.resp.RetCode = retCode
+	w.resp.Message = message
+}

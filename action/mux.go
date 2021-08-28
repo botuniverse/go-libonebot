@@ -24,16 +24,16 @@ func NewMux(prefix string) *Mux {
 }
 
 type Handler interface {
-	HandleRequest(*Request) Response
+	HandleRequest(ResponseWriter, *Request)
 }
 
-type HandlerFunc func(*Request) Response
+type HandlerFunc func(ResponseWriter, *Request)
 
-func (handler HandlerFunc) HandleRequest(r *Request) Response {
-	return handler(r)
+func (handler HandlerFunc) HandleRequest(w ResponseWriter, r *Request) {
+	handler(w, r)
 }
 
-func (mux *Mux) HandleFunc(action coreAction, handler func(*Request) Response) {
+func (mux *Mux) HandleFunc(action coreAction, handler func(ResponseWriter, *Request)) {
 	mux.Handle(action, HandlerFunc(handler))
 }
 
@@ -41,7 +41,7 @@ func (mux *Mux) Handle(action coreAction, handler Handler) {
 	mux.handlers[action.string] = handler
 }
 
-func (mux *Mux) HandleFuncExtended(action string, handler func(*Request) Response) {
+func (mux *Mux) HandleFuncExtended(action string, handler func(ResponseWriter, *Request)) {
 	mux.HandleExtended(action, HandlerFunc(handler))
 }
 
@@ -104,14 +104,24 @@ func (mux *Mux) parseRequest(body string) (Request, error) {
 	return r, nil
 }
 
-func (mux *Mux) HandleRequest(actionBody string) Response {
+func (mux *Mux) HandleRequest(actionBody string) (resp Response) {
+	// return "ok" if otherwise explicitly set to "failed"
+	resp.Status = StatusOK
+	resp.RetCode = RetCodeOK
+	w := ResponseWriter{resp: &resp}
+
+	// try parse the request from the JSON string
 	r, err := mux.parseRequest(actionBody)
 	if err != nil {
 		errMsg := fmt.Sprintf("Action 请求解析失败: %v", err)
 		log.Warnf(errMsg)
-		return FailedResponse(RetCodeInvalidRequest, errMsg)
+		w.WriteFailed(RetCodeInvalidRequest, errMsg)
+		return
 	}
 	log.Debugf("Action request: %#v", r)
+
+	// once we got the `echo` field, set the `echo` field in the response
+	resp.Echo = r.Echo
 
 	var handlers *map[string]Handler
 	if r.Action.IsExtended {
@@ -124,10 +134,10 @@ func (mux *Mux) HandleRequest(actionBody string) Response {
 	if handler == nil {
 		errMsg := fmt.Sprintf("Action `%v` 不存在", r.Action)
 		log.Warnf(errMsg)
-		return FailedResponse(RetCodeMissingAction, errMsg)
+		w.WriteFailed(RetCodeActionNotFound, errMsg)
+		return
 	}
 
-	resp := handler.HandleRequest(&r)
-	resp.Echo = r.Echo
-	return resp
+	handler.HandleRequest(w, &r)
+	return
 }
