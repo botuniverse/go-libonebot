@@ -11,46 +11,40 @@ import (
 
 type ActionMux struct {
 	prefix           string // prefix for extended actions
-	handlers         map[string]ActionHandler
-	extendedHandlers map[string]ActionHandler
+	handlers         map[string]Handler
+	extendedHandlers map[string]Handler
 }
 
 func NewActionMux(prefix string) *ActionMux {
 	return &ActionMux{
 		prefix:           prefix,
-		handlers:         map[string]ActionHandler{},
-		extendedHandlers: map[string]ActionHandler{},
+		handlers:         map[string]Handler{},
+		extendedHandlers: map[string]Handler{},
 	}
 }
 
-type ActionHandler interface {
-	HandleAction(ResponseWriter, *Request)
-}
-
-type ActionHandlerFunc func(ResponseWriter, *Request)
-
-func (handler ActionHandlerFunc) HandleAction(w ResponseWriter, r *Request) {
+func (handler HandlerFunc) HandleAction(w ResponseWriter, r *Request) {
 	handler(w, r)
 }
 
 func (mux *ActionMux) HandleFunc(action coreAction, handler func(ResponseWriter, *Request)) {
-	mux.Handle(action, ActionHandlerFunc(handler))
+	mux.Handle(action, HandlerFunc(handler))
 }
 
-func (mux *ActionMux) Handle(action coreAction, handler ActionHandler) {
+func (mux *ActionMux) Handle(action coreAction, handler Handler) {
 	mux.handlers[action.string] = handler
 }
 
 func (mux *ActionMux) HandleFuncExtended(action string, handler func(ResponseWriter, *Request)) {
-	mux.HandleExtended(action, ActionHandlerFunc(handler))
+	mux.HandleExtended(action, HandlerFunc(handler))
 }
 
-func (mux *ActionMux) HandleExtended(action string, handler ActionHandlerFunc) {
+func (mux *ActionMux) HandleExtended(action string, handler HandlerFunc) {
 	// if the prefix is empty, then the action name starts with "_"
 	mux.extendedHandlers[action] = handler
 }
 
-func validateActionJSON(actionJSON gjson.Result) error {
+func (mux *ActionMux) validateActionJSON(actionJSON gjson.Result) error {
 	if !actionJSON.Get("action").Exists() {
 		return errors.New("Action 请求体缺少 `action` 字段")
 	}
@@ -72,7 +66,7 @@ func (mux *ActionMux) parseRequest(body string) (Request, error) {
 	}
 
 	bodyJSON := gjson.Parse(body)
-	err := validateActionJSON(bodyJSON)
+	err := mux.validateActionJSON(bodyJSON)
 	if err != nil {
 		return Request{}, err
 	}
@@ -122,7 +116,7 @@ func (mux *ActionMux) HandleAction(actionBody string) (resp Response) {
 	// once we got the `echo` field, set the `echo` field in the response
 	resp.Echo = r.Echo
 
-	var handlers *map[string]ActionHandler
+	var handlers *map[string]Handler
 	if r.Action.IsExtended {
 		handlers = &mux.extendedHandlers
 	} else {
