@@ -44,7 +44,7 @@ func (mux *ActionMux) HandleExtended(action string, handler HandlerFunc) {
 	mux.extendedHandlers[action] = handler
 }
 
-func (mux *ActionMux) validateActionJSON(actionJSON gjson.Result) error {
+func validateActionJSON(actionJSON gjson.Result) error {
 	if !actionJSON.Get("action").Exists() {
 		return errors.New("Action 请求体缺少 `action` 字段")
 	}
@@ -66,7 +66,7 @@ func (mux *ActionMux) parseRequest(body string) (Request, error) {
 	}
 
 	bodyJSON := gjson.Parse(body)
-	err := mux.validateActionJSON(bodyJSON)
+	err := validateActionJSON(bodyJSON)
 	if err != nil {
 		return Request{}, err
 	}

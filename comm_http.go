@@ -43,13 +43,13 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	// reject unsupported content types
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
-		comm.fail(w, RetCodeInvalidRequest, "Action 请求体 MIME 类型必须是 application/json")
+		httpFail(w, RetCodeInvalidRequest, "Action 请求体 MIME 类型必须是 application/json")
 		return
 	}
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		comm.fail(w, RetCodeInvalidRequest, "Action 请求体读取失败: %v", err)
+		httpFail(w, RetCodeInvalidRequest, "Action 请求体读取失败: %v", err)
 		return
 	}
 
@@ -57,7 +57,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func (comm *httpComm) fail(w http.ResponseWriter, retcode int, errFormat string, args ...interface{}) {
+func httpFail(w http.ResponseWriter, retcode int, errFormat string, args ...interface{}) {
 	err := fmt.Errorf(errFormat, args...)
 	log.Warn(err)
 	json.NewEncoder(w).Encode(failedResponse(retcode, err))
