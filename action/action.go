@@ -24,6 +24,14 @@ var (
 )
 
 type Action struct {
-	Prefix string
-	Name   string
+	Prefix     string
+	Name       string
+	IsExtended bool
+}
+
+func (a Action) String() string {
+	if a.IsExtended {
+		return a.Prefix + "_" + a.Name
+	}
+	return a.Name
 }

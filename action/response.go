@@ -34,11 +34,20 @@ type Response struct {
 	Message string         `json:"message"`
 }
 
+func OKResponse(data interface{}) Response {
+	return Response{
+		Status:  StatusOK,
+		RetCode: RetCodeOK,
+		Data:    data,
+	}
+}
+
 func FailedResponse(retCode int, message string) Response {
 	return Response{
 		Status:  StatusFailed,
 		RetCode: retCode,
-		Data:    nil,
 		Message: message,
 	}
 }
+
+// TODO: response writer

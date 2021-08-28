@@ -24,16 +24,16 @@ func NewMux(prefix string) *Mux {
 }
 
 type Handler interface {
-	HandleRequest()
+	HandleRequest(*Request) Response
 }
 
-type HandlerFunc func()
+type HandlerFunc func(*Request) Response
 
-func (handler HandlerFunc) HandleRequest() {
-	handler()
+func (handler HandlerFunc) HandleRequest(r *Request) Response {
+	return handler(r)
 }
 
-func (mux *Mux) HandleFunc(action coreAction, handler func()) {
+func (mux *Mux) HandleFunc(action coreAction, handler func(*Request) Response) {
 	mux.Handle(action, HandlerFunc(handler))
 }
 
@@ -41,7 +41,7 @@ func (mux *Mux) Handle(action coreAction, handler Handler) {
 	mux.handlers[action.string] = handler
 }
 
-func (mux *Mux) HandleFuncExtended(action string, handler func()) {
+func (mux *Mux) HandleFuncExtended(action string, handler func(*Request) Response) {
 	mux.HandleExtended(action, HandlerFunc(handler))
 }
 
@@ -79,17 +79,20 @@ func (mux *Mux) parseRequest(body string) (Request, error) {
 
 	var action Action
 	fullname := bodyJSON.Get("action").String()
-	if strings.HasPrefix(fullname, mux.prefix+"_") {
+	prefix := mux.prefix + "_"
+	if strings.HasPrefix(fullname, prefix) {
 		// extended action
 		action = Action{
-			Prefix: mux.prefix,
-			Name:   strings.TrimPrefix(fullname, mux.prefix+"_"),
+			Prefix:     mux.prefix,
+			Name:       strings.TrimPrefix(fullname, prefix),
+			IsExtended: true,
 		}
 	} else {
 		// core action
 		action = Action{
-			Prefix: "",
-			Name:   fullname,
+			Prefix:     "",
+			Name:       fullname,
+			IsExtended: false,
 		}
 	}
 
@@ -102,22 +105,27 @@ func (mux *Mux) parseRequest(body string) (Request, error) {
 }
 
 func (mux *Mux) HandleRequest(actionBody string) Response {
-	log.Debugf("handlers: %#v", mux.handlers)
-	log.Debugf("extendedHandlers: %#v", mux.extendedHandlers)
-
 	r, err := mux.parseRequest(actionBody)
 	if err != nil {
 		errMsg := fmt.Sprintf("Action 请求解析失败: %v", err)
 		log.Warnf(errMsg)
 		return FailedResponse(RetCodeInvalidRequest, errMsg)
 	}
-
 	log.Debugf("Action request: %#v", r)
-	// TODO: now it simply return the request
-	return Response{
-		Status:  StatusOK,
-		RetCode: RetCodeOK,
-		Data:    r.Params.Value(),
-		Message: "",
+
+	var handlers *map[string]Handler
+	if r.Action.IsExtended {
+		handlers = &mux.extendedHandlers
+	} else {
+		handlers = &mux.handlers
 	}
+
+	handler := (*handlers)[r.Action.Name]
+	if handler == nil {
+		errMsg := fmt.Sprintf("Action `%v` 不存在", r.Action)
+		log.Warnf(errMsg)
+		return FailedResponse(RetCodeMissingAction, errMsg)
+	}
+
+	return handler.HandleRequest(&r)
 }
