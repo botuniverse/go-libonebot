@@ -1,4 +1,4 @@
-package message
+package libonebot
 
 import (
 	"encoding/json"

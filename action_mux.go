@@ -1,4 +1,4 @@
-package action
+package libonebot
 
 import (
 	"errors"
@@ -9,43 +9,43 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type Mux struct {
+type ActionMux struct {
 	prefix           string // prefix for extended actions
-	handlers         map[string]Handler
-	extendedHandlers map[string]Handler
+	handlers         map[string]ActionHandler
+	extendedHandlers map[string]ActionHandler
 }
 
-func NewMux(prefix string) *Mux {
-	return &Mux{
+func NewActionMux(prefix string) *ActionMux {
+	return &ActionMux{
 		prefix:           prefix,
-		handlers:         map[string]Handler{},
-		extendedHandlers: map[string]Handler{},
+		handlers:         map[string]ActionHandler{},
+		extendedHandlers: map[string]ActionHandler{},
 	}
 }
 
-type Handler interface {
-	HandleRequest(ResponseWriter, *Request)
+type ActionHandler interface {
+	HandleAction(ResponseWriter, *Request)
 }
 
-type HandlerFunc func(ResponseWriter, *Request)
+type ActionHandlerFunc func(ResponseWriter, *Request)
 
-func (handler HandlerFunc) HandleRequest(w ResponseWriter, r *Request) {
+func (handler ActionHandlerFunc) HandleAction(w ResponseWriter, r *Request) {
 	handler(w, r)
 }
 
-func (mux *Mux) HandleFunc(action coreAction, handler func(ResponseWriter, *Request)) {
-	mux.Handle(action, HandlerFunc(handler))
+func (mux *ActionMux) HandleFunc(action coreAction, handler func(ResponseWriter, *Request)) {
+	mux.Handle(action, ActionHandlerFunc(handler))
 }
 
-func (mux *Mux) Handle(action coreAction, handler Handler) {
+func (mux *ActionMux) Handle(action coreAction, handler ActionHandler) {
 	mux.handlers[action.string] = handler
 }
 
-func (mux *Mux) HandleFuncExtended(action string, handler func(ResponseWriter, *Request)) {
-	mux.HandleExtended(action, HandlerFunc(handler))
+func (mux *ActionMux) HandleFuncExtended(action string, handler func(ResponseWriter, *Request)) {
+	mux.HandleExtended(action, ActionHandlerFunc(handler))
 }
 
-func (mux *Mux) HandleExtended(action string, handler HandlerFunc) {
+func (mux *ActionMux) HandleExtended(action string, handler ActionHandlerFunc) {
 	// if the prefix is empty, then the action name starts with "_"
 	mux.extendedHandlers[action] = handler
 }
@@ -66,7 +66,7 @@ func validateActionJSON(actionJSON gjson.Result) error {
 	return nil
 }
 
-func (mux *Mux) parseRequest(body string) (Request, error) {
+func (mux *ActionMux) parseRequest(body string) (Request, error) {
 	if !gjson.Valid(body) {
 		return Request{}, errors.New("Action 请求体不是合法的 JSON")
 	}
@@ -104,11 +104,10 @@ func (mux *Mux) parseRequest(body string) (Request, error) {
 	return r, nil
 }
 
-func (mux *Mux) HandleRequest(actionBody string) (resp Response) {
+func (mux *ActionMux) HandleAction(actionBody string) (resp Response) {
 	// return "ok" if otherwise explicitly set to "failed"
-	resp.Status = StatusOK
-	resp.RetCode = RetCodeOK
 	w := ResponseWriter{resp: &resp}
+	w.WriteOK()
 
 	// try parse the request from the JSON string
 	r, err := mux.parseRequest(actionBody)
@@ -123,7 +122,7 @@ func (mux *Mux) HandleRequest(actionBody string) (resp Response) {
 	// once we got the `echo` field, set the `echo` field in the response
 	resp.Echo = r.Echo
 
-	var handlers *map[string]Handler
+	var handlers *map[string]ActionHandler
 	if r.Action.IsExtended {
 		handlers = &mux.extendedHandlers
 	} else {
@@ -139,6 +138,6 @@ func (mux *Mux) HandleRequest(actionBody string) (resp Response) {
 	}
 
 	log.Infof("Action `%v` 开始处理", r.Action)
-	handler.HandleRequest(w, &r)
+	handler.HandleAction(w, &r)
 	return
 }

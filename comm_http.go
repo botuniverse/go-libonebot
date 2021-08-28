@@ -1,4 +1,4 @@
-package comm
+package libonebot
 
 import (
 	"encoding/json"
@@ -7,13 +7,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/botuniverse/go-libonebot/action"
 	"github.com/botuniverse/go-libonebot/utils"
 	log "github.com/sirupsen/logrus"
 )
 
 type httpComm struct {
-	actionMux *action.Mux
+	actionMux *ActionMux
 }
 
 func (comm *httpComm) handleGET(w http.ResponseWriter, r *http.Request) {
@@ -44,28 +43,27 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	// reject unsupported content types
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
-		httpFailed(w, action.RetCodeInvalidRequest, "Action 请求体 MIME 类型必须是 application/json")
+		comm.fail(w, RetCodeInvalidRequest, "Action 请求体 MIME 类型必须是 application/json")
 		return
 	}
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		httpFailed(w, action.RetCodeInvalidRequest, "Action 请求体读取失败: %v", err)
+		comm.fail(w, RetCodeInvalidRequest, "Action 请求体读取失败: %v", err)
 		return
 	}
 
-	actionResponse := comm.actionMux.HandleRequest(utils.BytesToString(bodyBytes))
-	json.NewEncoder(w).Encode(actionResponse)
+	response := comm.actionMux.HandleAction(utils.BytesToString(bodyBytes))
+	json.NewEncoder(w).Encode(response)
 }
 
-func httpFailed(w http.ResponseWriter, retcode int, errFormat string, args ...interface{}) {
-	errMsg := fmt.Sprintf(errFormat, args...)
-	log.Warnf(errMsg)
-	json.NewEncoder(w).Encode(action.FailedResponse(retcode, errMsg))
+func (comm *httpComm) fail(w http.ResponseWriter, retcode int, errFormat string, args ...interface{}) {
+	err := fmt.Errorf(errFormat, args...)
+	log.Warn(err)
+	json.NewEncoder(w).Encode(failedResponse(retcode, err))
 }
 
-// Start an HTTP communication task.
-func StartHTTPTask(host string, port uint16, actionMux *action.Mux) {
+func commStartHTTP(host string, port uint16, actionMux *ActionMux) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 HTTP (%v)...", addr)
 

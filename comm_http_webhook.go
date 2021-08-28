@@ -1,16 +1,14 @@
-package comm
+package libonebot
 
 import (
 	"bytes"
 	"net/http"
 	"net/url"
 
-	"github.com/botuniverse/go-libonebot/event"
 	log "github.com/sirupsen/logrus"
 )
 
-// Start an HTTP Webhook communication task.
-func StartHTTPWebhookTask(urlString string, eventBroadcaster *event.Broadcaster) {
+func commStartHTTPWebhook(urlString string, eventBroadcaster *EventBroadcaster) {
 	log.Infof("正在启动 HTTP Webhook (%v)...", urlString)
 
 	uri, err := url.Parse(urlString)

@@ -1,4 +1,4 @@
-package action
+package libonebot
 
 type coreAction struct{ string }
 

@@ -1,16 +1,13 @@
-package main
+package libonebot
 
 import (
-	"github.com/botuniverse/go-libonebot/action"
-	"github.com/botuniverse/go-libonebot/comm"
-	"github.com/botuniverse/go-libonebot/event"
 	log "github.com/sirupsen/logrus"
 )
 
 type OneBot struct {
 	Platform         string
-	ActionMux        *action.Mux
-	eventBroadcaster *event.Broadcaster
+	ActionMux        *ActionMux
+	eventBroadcaster *EventBroadcaster
 }
 
 func NewOneBot(platform string) *OneBot {
@@ -19,15 +16,15 @@ func NewOneBot(platform string) *OneBot {
 	}
 	return &OneBot{
 		Platform:         platform,
-		ActionMux:        action.NewMux(platform),
-		eventBroadcaster: event.NewBroadcaster(),
+		ActionMux:        NewActionMux(platform),
+		eventBroadcaster: NewEventBroadcaster(),
 	}
 }
 
 func (ob *OneBot) startCommunicationMethods() {
-	comm.StartHTTPTask("127.0.0.1", 5700, ob.ActionMux)
-	comm.StartWSTask("127.0.0.1", 6700, ob.ActionMux, ob.eventBroadcaster)
-	comm.StartHTTPWebhookTask("http://127.0.0.1:8080", ob.eventBroadcaster)
+	commStartHTTP("127.0.0.1", 5700, ob.ActionMux)
+	commStartWS("127.0.0.1", 6700, ob.ActionMux, ob.eventBroadcaster)
+	commStartHTTPWebhook("http://127.0.0.1:8080", ob.eventBroadcaster)
 }
 
 func (ob *OneBot) Run() {
@@ -36,6 +33,6 @@ func (ob *OneBot) Run() {
 	select {}
 }
 
-func (ob *OneBot) PushEvent(event event.AnyEvent) {
+func (ob *OneBot) PushEvent(event AnyEvent) {
 	ob.eventBroadcaster.Broadcast(event)
 }

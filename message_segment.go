@@ -1,4 +1,4 @@
-package message
+package libonebot
 
 type Segment struct {
 	Type string                 `json:"type"`

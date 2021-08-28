@@ -1,23 +1,21 @@
-package comm
+package libonebot
 
 import (
 	"fmt"
 	"net/http"
 	"sync"
 
-	"github.com/botuniverse/go-libonebot/action"
-	"github.com/botuniverse/go-libonebot/event"
 	"github.com/botuniverse/go-libonebot/utils"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 )
 
 type wsComm struct {
-	actionMux        *action.Mux
-	eventBroadcaster *event.Broadcaster
+	actionMux        *ActionMux
+	eventBroadcaster *EventBroadcaster
 }
 
-var upgrader = websocket.Upgrader{
+var wsUpgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
@@ -25,7 +23,7 @@ var upgrader = websocket.Upgrader{
 
 func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	log.Infof("收到来自 %v 的 WebSocket 连接请求", r.RemoteAddr)
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Errorf("WebSocket 连接失败, 错误: %v", err)
 		return
@@ -59,15 +57,14 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		actionResponse := comm.actionMux.HandleRequest(utils.BytesToString(messageBytes))
+		response := comm.actionMux.HandleAction(utils.BytesToString(messageBytes))
 		connWriteLock.Lock()
-		conn.WriteJSON(actionResponse)
+		conn.WriteJSON(response)
 		connWriteLock.Unlock()
 	}
 }
 
-// Start a WebSocket commmunication task.
-func StartWSTask(host string, port uint16, actionMux *action.Mux, eventBroadcaster *event.Broadcaster) {
+func commStartWS(host string, port uint16, actionMux *ActionMux, eventBroadcaster *EventBroadcaster) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 

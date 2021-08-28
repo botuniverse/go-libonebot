@@ -1,9 +1,8 @@
-package action
+package libonebot
 
 import (
 	"fmt"
 
-	"github.com/botuniverse/go-libonebot/message"
 	"github.com/tidwall/gjson"
 )
 
@@ -66,20 +65,20 @@ func (params *Params) GetString(key string) (string, error) {
 	return val.Str, nil
 }
 
-func (params *Params) GetMessage(key string) (message.Message, error) {
+func (params *Params) GetMessage(key string) (Message, error) {
 	val, err := params.Get(key)
 	if err != nil {
 		return nil, err
 	}
 
 	if val.Type == gjson.String {
-		return message.Message{message.TextSegment(val.Str)}, nil
+		return Message{TextSegment(val.Str)}, nil
 	}
 
 	if val.IsObject() {
-		return message.MessageFromJSON("[" + val.Raw + "]")
+		return MessageFromJSON("[" + val.Raw + "]")
 	} else if val.IsArray() {
-		return message.MessageFromJSON(val.Raw)
+		return MessageFromJSON(val.Raw)
 	} else {
 		return nil, errorInvalidParam(key)
 	}

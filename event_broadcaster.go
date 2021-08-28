@@ -1,4 +1,4 @@
-package event
+package libonebot
 
 import (
 	"encoding/json"
@@ -7,18 +7,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Broadcaster struct {
+type EventBroadcaster struct {
 	listenChans     []chan []byte
 	listenChansLock sync.RWMutex
 }
 
-func NewBroadcaster() *Broadcaster {
-	return &Broadcaster{
+func NewEventBroadcaster() *EventBroadcaster {
+	return &EventBroadcaster{
 		listenChans: make([]chan []byte, 0),
 	}
 }
 
-func (broadcaster *Broadcaster) OpenListenChan() <-chan []byte {
+func (broadcaster *EventBroadcaster) OpenListenChan() <-chan []byte {
 	broadcaster.listenChansLock.Lock()
 	defer broadcaster.listenChansLock.Unlock()
 
@@ -27,7 +27,7 @@ func (broadcaster *Broadcaster) OpenListenChan() <-chan []byte {
 	return ch
 }
 
-func (broadcaster *Broadcaster) CloseListenChan(listenCh <-chan []byte) {
+func (broadcaster *EventBroadcaster) CloseListenChan(listenCh <-chan []byte) {
 	broadcaster.listenChansLock.Lock()
 	defer broadcaster.listenChansLock.Unlock()
 
@@ -40,7 +40,7 @@ func (broadcaster *Broadcaster) CloseListenChan(listenCh <-chan []byte) {
 	}
 }
 
-func (broadcaster *Broadcaster) Broadcast(event AnyEvent) bool {
+func (broadcaster *EventBroadcaster) Broadcast(event AnyEvent) bool {
 	log.Debugf("Event: %#v", event)
 
 	if !event.TryFixUp() {
