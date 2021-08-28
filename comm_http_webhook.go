@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func commStartHTTPWebhook(urlString string, eventBroadcaster *eventBroadcaster) {
+func commStartHTTPWebhook(urlString string, onebot *OneBot) {
 	log.Infof("正在启动 HTTP Webhook (%v)...", urlString)
 
 	uri, err := url.Parse(urlString)
@@ -21,7 +21,7 @@ func commStartHTTPWebhook(urlString string, eventBroadcaster *eventBroadcaster) 
 		return
 	}
 
-	eventChan := eventBroadcaster.OpenListenChan()
+	eventChan := onebot.openEventListenChan()
 	httpClient := &http.Client{}
 	go func() {
 		for eventBytes := range eventChan {
