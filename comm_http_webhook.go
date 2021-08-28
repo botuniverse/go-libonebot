@@ -33,6 +33,7 @@ func commStartHTTPWebhook(urlString string, onebot *OneBot) commCloser {
 			// TODO: use special User-Agent
 			// TODO: check status code
 			// TODO: timeout
+			log.Debugf("通过 HTTP Webhook (%v) 推送事件", urlString)
 			httpClient.Post(urlString, "application/json", bytes.NewReader(eventBytes))
 		}
 		log.Infof("HTTP Webhook (%v) 已关闭", urlString)

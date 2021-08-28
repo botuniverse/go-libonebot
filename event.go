@@ -20,7 +20,7 @@ var (
 )
 
 type Event struct {
-	lock       sync.Mutex
+	lock       sync.RWMutex
 	Platform   string    `json:"platform"`
 	Time       int64     `json:"time"`
 	SelfID     string    `json:"self_id"`
@@ -29,19 +29,27 @@ type Event struct {
 }
 
 type AnyEvent interface {
-	tryFixUp() bool
+	Name() string
+	tryFixUp(platform string) bool
 }
 
-func (e *Event) tryFixUp() bool {
+func (e *Event) Name() string {
+	e.lock.RLock()
+	defer e.lock.RUnlock()
+	return e.Type.string + "." + e.DetailType
+}
+
+func (e *Event) tryFixUp(platform string) bool {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
-	if e.Platform == "" || e.SelfID == "" || e.Type.string == "" || e.DetailType == "" {
+	if e.SelfID == "" || e.Type.string == "" || e.DetailType == "" {
 		return false
 	}
 	if e.Time == 0 {
 		e.Time = time.Now().Unix()
 	}
+	e.Platform = platform
 	return true
 }
 

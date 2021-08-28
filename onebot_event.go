@@ -7,9 +7,7 @@ import (
 )
 
 func (ob *OneBot) Push(event AnyEvent) bool {
-	log.Debugf("Event: %#v", event)
-
-	if !event.tryFixUp() {
+	if !event.tryFixUp(ob.Platform) {
 		log.Warnf("事件字段值无效")
 		return false
 	}

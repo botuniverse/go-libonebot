@@ -13,6 +13,7 @@ import (
 
 type wsComm struct {
 	onebot *OneBot
+	addr   string
 }
 
 var wsUpgrader = websocket.Upgrader{
@@ -22,13 +23,13 @@ var wsUpgrader = websocket.Upgrader{
 }
 
 func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
-	log.Infof("收到来自 %v 的 WebSocket 连接请求", r.RemoteAddr)
+	log.Infof("收到来自 %v 的 WebSocket (%v) 连接请求", r.RemoteAddr, comm.addr)
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Errorf("WebSocket 连接失败, 错误: %v", err)
+		log.Errorf("WebSocket (%v) 连接失败, 错误: %v", comm.addr, err)
 		return
 	}
-	log.Infof("WebSocket 连接成功")
+	log.Infof("WebSocket (%v) 连接成功", comm.addr)
 	defer conn.Close()
 
 	// protect concurrent writes to the same connection
@@ -39,6 +40,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		// keep pushing events throught the connection
 		for eventBytes := range eventChan {
+			log.Debugf("通过 WebSocket (%v) 推送事件", comm.addr)
 			connWriteLock.Lock()
 			conn.WriteMessage(websocket.TextMessage, eventBytes)
 			connWriteLock.Unlock()
@@ -50,9 +52,9 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		_, messageBytes, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				log.Infof("WebSocket 连接断开")
+				log.Infof("WebSocket (%v) 连接断开", comm.addr)
 			} else {
-				log.Errorf("WebSocket 连接异常断开, 错误: %v", err)
+				log.Errorf("WebSocket (%v) 连接异常断开, 错误: %v", comm.addr, err)
 			}
 			break
 		}
@@ -68,7 +70,7 @@ func commStartWS(host string, port uint16, onebot *OneBot) commCloser {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 
-	comm := &wsComm{onebot: onebot}
+	comm := &wsComm{onebot: onebot, addr: addr}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
 	server := &http.Server{

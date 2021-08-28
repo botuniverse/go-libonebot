@@ -43,7 +43,6 @@ func main() {
 			obdummy.Push(
 				&ob.MessageEvent{
 					Event: ob.Event{
-						Platform:   "qq",
 						SelfID:     "123",
 						Type:       ob.EventTypeMessage,
 						DetailType: "private",
