@@ -7,5 +7,5 @@ import (
 type Request struct {
 	Action Action
 	Params gjson.Result
-	echo   gjson.Result
+	Echo   interface{}
 }

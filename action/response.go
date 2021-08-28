@@ -32,6 +32,7 @@ type Response struct {
 	RetCode int            `json:"retcode"`
 	Data    interface{}    `json:"data"`
 	Message string         `json:"message"`
+	Echo    interface{}    `json:"echo"`
 }
 
 func OKResponse(data interface{}) Response {

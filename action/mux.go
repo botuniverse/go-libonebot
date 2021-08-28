@@ -99,7 +99,7 @@ func (mux *Mux) parseRequest(body string) (Request, error) {
 	r := Request{
 		Action: action,
 		Params: bodyJSON.Get("params"),
-		echo:   bodyJSON.Get("echo"),
+		Echo:   bodyJSON.Get("echo").Value(),
 	}
 	return r, nil
 }
@@ -127,5 +127,7 @@ func (mux *Mux) HandleRequest(actionBody string) Response {
 		return FailedResponse(RetCodeMissingAction, errMsg)
 	}
 
-	return handler.HandleRequest(&r)
+	resp := handler.HandleRequest(&r)
+	resp.Echo = r.Echo
+	return resp
 }
