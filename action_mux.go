@@ -23,10 +23,6 @@ func NewActionMux(prefix string) *ActionMux {
 	}
 }
 
-func (handler HandlerFunc) HandleAction(w ResponseWriter, r *Request) {
-	handler(w, r)
-}
-
 func (mux *ActionMux) HandleFunc(action coreAction, handler func(ResponseWriter, *Request)) {
 	mux.Handle(action, HandlerFunc(handler))
 }
