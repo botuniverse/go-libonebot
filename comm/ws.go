@@ -14,7 +14,7 @@ import (
 
 type wsComm struct {
 	actionMux       *action.Mux
-	eventDispatcher *event.EventDispatcher
+	eventDispatcher *event.Dispatcher
 }
 
 var upgrader = websocket.Upgrader{
@@ -67,7 +67,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 }
 
 // Start a WebSocket commmunication task.
-func StartWSTask(host string, port uint16, actionMux *action.Mux, eventDispatcher *event.EventDispatcher) {
+func StartWSTask(host string, port uint16, actionMux *action.Mux, eventDispatcher *event.Dispatcher) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 

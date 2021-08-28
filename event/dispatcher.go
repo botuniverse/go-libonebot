@@ -7,18 +7,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type EventDispatcher struct {
+type Dispatcher struct {
 	outChans     []chan []byte
 	outChansLock sync.RWMutex
 }
 
-func NewEventDispatcher() *EventDispatcher {
-	return &EventDispatcher{
+func NewDispatcher() *Dispatcher {
+	return &Dispatcher{
 		outChans: make([]chan []byte, 0),
 	}
 }
 
-func (dispatcher *EventDispatcher) OpenOutChan() <-chan []byte {
+func (dispatcher *Dispatcher) OpenOutChan() <-chan []byte {
 	dispatcher.outChansLock.Lock()
 	defer dispatcher.outChansLock.Unlock()
 
@@ -27,7 +27,7 @@ func (dispatcher *EventDispatcher) OpenOutChan() <-chan []byte {
 	return outCh
 }
 
-func (dispatcher *EventDispatcher) CloseOutChan(outCh <-chan []byte) {
+func (dispatcher *Dispatcher) CloseOutChan(outCh <-chan []byte) {
 	dispatcher.outChansLock.Lock()
 	defer dispatcher.outChansLock.Unlock()
 
@@ -40,7 +40,7 @@ func (dispatcher *EventDispatcher) CloseOutChan(outCh <-chan []byte) {
 	}
 }
 
-func (dispatcher *EventDispatcher) Dispatch(event AnyEvent) bool {
+func (dispatcher *Dispatcher) Dispatch(event AnyEvent) bool {
 	log.Debugf("Event: %#v", event)
 
 	if !event.TryFixUp() {
