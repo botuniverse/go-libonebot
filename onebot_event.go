@@ -6,7 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (ob *OneBot) PushEvent(event AnyEvent) bool {
+func (ob *OneBot) Push(event AnyEvent) bool {
 	log.Debugf("Event: %#v", event)
 
 	if !event.tryFixUp() {

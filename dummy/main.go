@@ -40,7 +40,7 @@ func main() {
 
 	go func() {
 		for {
-			obdummy.PushEvent(
+			obdummy.Push(
 				&ob.MessageEvent{
 					Event: ob.Event{
 						Platform:   "qq",
