@@ -24,13 +24,14 @@ func main() {
 	})
 
 	obdummy.HandleFunc(ob.ActionSendMessage, func(w ob.ResponseWriter, r *ob.Request) {
-		userID, err := r.Params.GetString("user_id")
-		if err != nil {
-			w.WriteFailed(ob.RetCodeParamError, err)
+		p := ob.NewParamGetter(&r.Params, w)
+		userID, ok := p.GetString("user_id")
+		if !ok {
+			return
 		}
-		msg, err := r.Params.GetMessage("message")
-		if err != nil {
-			w.WriteFailed(ob.RetCodeParamError, err)
+		msg, ok := p.GetMessage("message")
+		if !ok {
+			return
 		}
 		log.Debugf("Send message: %#v, to %v", msg, userID)
 	})

@@ -77,3 +77,57 @@ func (params *Params) GetMessage(key string) (Message, error) {
 		return nil, errorInvalidParam(key)
 	}
 }
+
+type ParamGetter struct {
+	params *Params
+	w      ResponseWriter
+}
+
+func NewParamGetter(params *Params, w ResponseWriter) *ParamGetter {
+	return &ParamGetter{params, w}
+}
+
+func (getter *ParamGetter) Get(key string) (gjson.Result, bool) {
+	val, err := getter.params.Get(key)
+	if err != nil {
+		getter.w.WriteFailed(RetCodeParamError, err)
+		return val, false
+	}
+	return val, true
+}
+
+func (getter *ParamGetter) GetBool(key string) (bool, bool) {
+	val, err := getter.params.GetBool(key)
+	if err != nil {
+		getter.w.WriteFailed(RetCodeParamError, err)
+		return val, false
+	}
+	return val, true
+}
+
+func (getter *ParamGetter) GetInt(key string) (int64, bool) {
+	val, err := getter.params.GetInt(key)
+	if err != nil {
+		getter.w.WriteFailed(RetCodeParamError, err)
+		return val, false
+	}
+	return val, true
+}
+
+func (getter *ParamGetter) GetString(key string) (string, bool) {
+	val, err := getter.params.GetString(key)
+	if err != nil {
+		getter.w.WriteFailed(RetCodeParamError, err)
+		return val, false
+	}
+	return val, true
+}
+
+func (getter *ParamGetter) GetMessage(key string) (Message, bool) {
+	val, err := getter.params.GetMessage(key)
+	if err != nil {
+		getter.w.WriteFailed(RetCodeParamError, err)
+		return val, false
+	}
+	return val, true
+}
