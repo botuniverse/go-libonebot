@@ -11,8 +11,7 @@ import (
 )
 
 type wsComm struct {
-	actionMux *ActionMux
-	onebot    *OneBot
+	onebot *OneBot
 }
 
 var wsUpgrader = websocket.Upgrader{
@@ -57,20 +56,19 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		response := comm.actionMux.HandleAction(utils.BytesToString(messageBytes))
+		response := comm.onebot.handleAction(utils.BytesToString(messageBytes))
 		connWriteLock.Lock()
 		conn.WriteJSON(response)
 		connWriteLock.Unlock()
 	}
 }
 
-func commStartWS(host string, port uint16, actionMux *ActionMux, onebot *OneBot) {
+func commStartWS(host string, port uint16, onebot *OneBot) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 
 	comm := &wsComm{
-		actionMux: actionMux,
-		onebot:    onebot,
+		onebot: onebot,
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)

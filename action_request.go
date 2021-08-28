@@ -1,7 +1,8 @@
 package onebot
 
 import (
-	"fmt"
+	"errors"
+	"strings"
 
 	"github.com/tidwall/gjson"
 )
@@ -12,74 +13,56 @@ type Request struct {
 	Echo   interface{}
 }
 
-type Params struct {
-	JSON gjson.Result
+func validateActionJSON(actionJSON gjson.Result) error {
+	if !actionJSON.Get("action").Exists() {
+		return errors.New("Action 请求体缺少 `action` 字段")
+	}
+	if actionJSON.Get("action").String() == "" {
+		return errors.New("Action 请求体的 `action` 字段为空")
+	}
+	if !actionJSON.Get("params").Exists() {
+		return errors.New("Action 请求体缺少 `params` 字段")
+	}
+	if !actionJSON.Get("params").IsObject() {
+		return errors.New("Action 请求体的 `params` 字段不是一个 JSON 对象")
+	}
+	return nil
 }
 
-func errorMissingParam(key string) error {
-	return fmt.Errorf("参数 `%v` 不存在", key)
-}
+func parseActionRequest(prefix string, actionBody string) (Request, error) {
+	if !gjson.Valid(actionBody) {
+		return Request{}, errors.New("Action 请求体不是合法的 JSON")
+	}
 
-func errorInvalidParam(key string) error {
-	return fmt.Errorf("参数 `%v` 无效", key)
-}
-
-func (params *Params) Get(key string) (gjson.Result, error) {
-	val := params.JSON.Get(key)
-	if !val.Exists() {
-		return gjson.Result{}, errorMissingParam(key)
-	}
-	return val, nil
-}
-
-func (params *Params) GetBool(key string) (bool, error) {
-	val := params.JSON.Get(key)
-	if !val.Exists() {
-		return false, errorMissingParam(key)
-	}
-	if val.Type != gjson.True && val.Type != gjson.False {
-		return false, errorInvalidParam(key)
-	}
-	return val.Bool(), nil
-}
-
-func (params *Params) GetInt(key string) (int64, error) {
-	val := params.JSON.Get(key)
-	if !val.Exists() {
-		return 0, errorMissingParam(key)
-	}
-	if val.Type != gjson.Number {
-		return 0, errorInvalidParam(key)
-	}
-	return val.Int(), nil
-}
-
-func (params *Params) GetString(key string) (string, error) {
-	val := params.JSON.Get(key)
-	if !val.Exists() {
-		return "", errorMissingParam(key)
-	}
-	if val.Type != gjson.String {
-		return "", errorInvalidParam(key)
-	}
-	return val.Str, nil
-}
-
-func (params *Params) GetMessage(key string) (Message, error) {
-	val, err := params.Get(key)
+	actionJSON := gjson.Parse(actionBody)
+	err := validateActionJSON(actionJSON)
 	if err != nil {
-		return nil, err
+		return Request{}, err
 	}
 
-	if val.Type == gjson.String {
-		return Message{TextSegment(val.Str)}, nil
-	}
-
-	if val.IsObject() {
-		return MessageFromJSON("[" + val.Raw + "]")
-	} else if val.IsArray() {
-		return MessageFromJSON(val.Raw)
+	var action Action
+	fullname := actionJSON.Get("action").String()
+	prefix_ul := prefix + "_"
+	if strings.HasPrefix(fullname, prefix_ul) {
+		// extended action
+		action = Action{
+			Prefix:     prefix,
+			Name:       strings.TrimPrefix(fullname, prefix_ul),
+			IsExtended: true,
+		}
 	} else {
-		return nil, errorInvalidParam(key)
+		// core action
+		action = Action{
+			Prefix:     "",
+			Name:       fullname,
+			IsExtended: false,
+		}
 	}
+
+	r := Request{
+		Action: action,
+		Params: Params{JSON: actionJSON.Get("params")},
+		Echo:   actionJSON.Get("echo").Value(),
+	}
+	return r, nil
 }

@@ -16,14 +16,14 @@ func main() {
 
 	obdummy := &OneBotDummy{OneBot: ob.NewOneBot("dummy")}
 
-	obdummy.ActionMux.HandleFunc(ob.ActionGetVersion, func(w ob.ResponseWriter, r *ob.Request) {
+	obdummy.HandleFunc(ob.ActionGetVersion, func(w ob.ResponseWriter, r *ob.Request) {
 		w.WriteData(map[string]string{
 			"version":         "1.0.0",
 			"onebot_standard": "v12",
 		})
 	})
 
-	obdummy.ActionMux.HandleFunc(ob.ActionSendMessage, func(w ob.ResponseWriter, r *ob.Request) {
+	obdummy.HandleFunc(ob.ActionSendMessage, func(w ob.ResponseWriter, r *ob.Request) {
 		userID, err := r.Params.GetString("user_id")
 		if err != nil {
 			w.WriteFailed(ob.RetCodeParamError, err)
@@ -35,7 +35,7 @@ func main() {
 		log.Debugf("Send message: %#v, to %v", msg, userID)
 	})
 
-	obdummy.ActionMux.HandleFuncExtended("do_something", func(w ob.ResponseWriter, r *ob.Request) {
+	obdummy.HandleFuncExtended("do_something", func(w ob.ResponseWriter, r *ob.Request) {
 	})
 
 	go func() {

@@ -36,14 +36,6 @@ type Response struct {
 	Echo    interface{}  `json:"echo,omitempty"`
 }
 
-// func OKResponse(data interface{}) Response {
-// 	return Response{
-// 		Status:  statusOK,
-// 		RetCode: RetCodeOK,
-// 		Data:    data,
-// 	}
-// }
-
 func failedResponse(retCode int, err error) Response {
 	return Response{
 		Status:  statusFailed,
