@@ -29,12 +29,12 @@ func commStartHTTPWebhook(urlString string, onebot *OneBot) commCloser {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for eventBytes := range eventChan {
+		for event := range eventChan {
 			// TODO: use special User-Agent
 			// TODO: check status code
 			// TODO: timeout
-			log.Debugf("通过 HTTP Webhook (%v) 推送事件", urlString)
-			httpClient.Post(urlString, "application/json", bytes.NewReader(eventBytes))
+			log.Debugf("通过 HTTP Webhook (%v) 推送事件 %v", urlString, event.name)
+			httpClient.Post(urlString, "application/json", bytes.NewReader(event.bytes))
 		}
 		log.Infof("HTTP Webhook (%v) 已关闭", urlString)
 	}()

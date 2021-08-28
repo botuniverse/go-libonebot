@@ -9,7 +9,7 @@ import (
 type OneBot struct {
 	Platform string
 
-	eventListenChans     []chan []byte
+	eventListenChans     []chan marshaledEvent
 	eventListenChansLock sync.RWMutex
 
 	handlers         map[string]Handler
@@ -26,7 +26,7 @@ func NewOneBot(platform string) *OneBot {
 	return &OneBot{
 		Platform: platform,
 
-		eventListenChans:     make([]chan []byte, 0),
+		eventListenChans:     make([]chan marshaledEvent, 0),
 		eventListenChansLock: sync.RWMutex{},
 
 		handlers:         make(map[string]Handler),

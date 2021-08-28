@@ -39,10 +39,10 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	defer comm.onebot.closeEventListenChan(eventChan)
 	go func() {
 		// keep pushing events throught the connection
-		for eventBytes := range eventChan {
-			log.Debugf("通过 WebSocket (%v) 推送事件", comm.addr)
+		for event := range eventChan {
+			log.Debugf("通过 WebSocket (%v) 推送事件, %v", comm.addr, event.name)
 			connWriteLock.Lock()
-			conn.WriteMessage(websocket.TextMessage, eventBytes)
+			conn.WriteMessage(websocket.TextMessage, event.bytes)
 			connWriteLock.Unlock()
 		}
 	}()
