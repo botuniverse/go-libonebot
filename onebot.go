@@ -16,6 +16,7 @@ type OneBot struct {
 	extendedHandlers map[string]Handler
 
 	commClosers []commCloser
+	wg          sync.WaitGroup
 }
 
 func NewOneBot(platform string) *OneBot {
@@ -32,18 +33,21 @@ func NewOneBot(platform string) *OneBot {
 		extendedHandlers: make(map[string]Handler),
 
 		commClosers: make([]commCloser, 0),
+		wg:          sync.WaitGroup{},
 	}
 }
 
 func (ob *OneBot) Run() {
 	ob.startCommMethods()
 	log.Infof("OneBot 已启动")
-	select {}
+	ob.wg.Add(1)
+	ob.wg.Wait()
+	log.Infof("OneBot 已关闭")
 }
 
 func (ob *OneBot) Shutdown() {
 	for _, closer := range ob.commClosers {
 		closer.Close()
 	}
-	log.Infof("OneBot 已关闭")
+	ob.wg.Done()
 }

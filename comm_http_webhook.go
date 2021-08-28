@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 	"net/url"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -23,16 +24,22 @@ func commStartHTTPWebhook(urlString string, onebot *OneBot) commCloser {
 
 	eventChan := onebot.openEventListenChan()
 	httpClient := &http.Client{}
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for eventBytes := range eventChan {
 			// TODO: use special User-Agent
 			// TODO: check status code
+			// TODO: timeout
 			httpClient.Post(urlString, "application/json", bytes.NewReader(eventBytes))
 		}
-		log.Warnf("HTTP Webhook (%v) 已关闭", urlString)
+		log.Infof("HTTP Webhook (%v) 已关闭", urlString)
 	}()
 
 	return func() {
 		onebot.closeEventListenChan(eventChan)
+		wg.Wait()
 	}
 }
