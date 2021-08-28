@@ -98,7 +98,7 @@ func (mux *Mux) parseRequest(body string) (Request, error) {
 
 	r := Request{
 		Action: action,
-		Params: bodyJSON.Get("params"),
+		Params: Params{JSON: bodyJSON.Get("params")},
 		Echo:   bodyJSON.Get("echo").Value(),
 	}
 	return r, nil
@@ -138,6 +138,7 @@ func (mux *Mux) HandleRequest(actionBody string) (resp Response) {
 		return
 	}
 
+	log.Infof("Action `%v` 开始处理", r.Action)
 	handler.HandleRequest(w, &r)
 	return
 }

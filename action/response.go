@@ -18,8 +18,7 @@ const (
 
 	RetCodeInvalidRequest = 11001
 	RetCodeActionNotFound = 11002
-	RetCodeMissingParam   = 11003
-	RetCodeInvalidParam   = 11004
+	RetCodeParamError     = 11003
 
 	RetCodeDatabaseError   = 12100
 	RetCodeFilesystemError = 12200
