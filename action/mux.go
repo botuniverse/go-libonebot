@@ -9,13 +9,13 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type ActionMux struct {
+type Mux struct {
 	prefix   string // prefix for extended actions
 	handlers map[string]Handler
 }
 
-func NewActionMux(prefix string) *ActionMux {
-	return &ActionMux{
+func NewMux(prefix string) *Mux {
+	return &Mux{
 		prefix:   prefix,
 		handlers: map[string]Handler{},
 	}
@@ -31,19 +31,19 @@ func (handler HandlerFunc) HandleRequest() {
 	handler()
 }
 
-func (mux *ActionMux) HandleFunc(action coreAction, handler func()) {
+func (mux *Mux) HandleFunc(action coreAction, handler func()) {
 	mux.Handle(action, HandlerFunc(handler))
 }
 
-func (mux *ActionMux) Handle(action coreAction, handler Handler) {
+func (mux *Mux) Handle(action coreAction, handler Handler) {
 	mux.handlers[action.string] = handler
 }
 
-func (mux *ActionMux) HandleFuncExtended(action string, handler func()) {
+func (mux *Mux) HandleFuncExtended(action string, handler func()) {
 	mux.HandleExtended(action, HandlerFunc(handler))
 }
 
-func (mux *ActionMux) HandleExtended(action string, handler HandlerFunc) {
+func (mux *Mux) HandleExtended(action string, handler HandlerFunc) {
 	// if the prefix is empty, then the action name starts with "_"
 	mux.handlers[mux.prefix+"_"+action] = handler
 }
@@ -64,7 +64,7 @@ func validateActionJSON(actionJSON gjson.Result) error {
 	return nil
 }
 
-func (mux *ActionMux) parseRequest(body string) (Request, error) {
+func (mux *Mux) parseRequest(body string) (Request, error) {
 	if !gjson.Valid(body) {
 		return Request{}, errors.New("Action 请求体不是合法的 JSON")
 	}
@@ -97,7 +97,7 @@ func (mux *ActionMux) parseRequest(body string) (Request, error) {
 	return r, nil
 }
 
-func (mux *ActionMux) HandleRequest(actionBody string) Response {
+func (mux *Mux) HandleRequest(actionBody string) Response {
 	log.Debugf("handlers: %#v", mux.handlers)
 	r, err := mux.parseRequest(actionBody)
 	if err != nil {

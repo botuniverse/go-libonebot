@@ -9,7 +9,7 @@ import (
 
 type OneBot struct {
 	Platform        string
-	ActionMux       *action.ActionMux
+	ActionMux       *action.Mux
 	eventDispatcher *event.EventDispatcher
 }
 
@@ -19,7 +19,7 @@ func NewOneBot(platform string) *OneBot {
 	}
 	return &OneBot{
 		Platform:        platform,
-		ActionMux:       action.NewActionMux(platform),
+		ActionMux:       action.NewMux(platform),
 		eventDispatcher: event.NewEventDispatcher(),
 	}
 }

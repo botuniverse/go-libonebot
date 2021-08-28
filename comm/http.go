@@ -13,7 +13,7 @@ import (
 )
 
 type httpComm struct {
-	actionMux *action.ActionMux
+	actionMux *action.Mux
 }
 
 func (comm *httpComm) handleGET(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +65,7 @@ func httpFailed(w http.ResponseWriter, retcode int, errFormat string, args ...in
 }
 
 // Start an HTTP communication task.
-func StartHTTPTask(host string, port uint16, actionMux *action.ActionMux) {
+func StartHTTPTask(host string, port uint16, actionMux *action.Mux) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 HTTP (%v)...", addr)
 
