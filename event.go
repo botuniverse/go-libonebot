@@ -29,10 +29,10 @@ type Event struct {
 }
 
 type AnyEvent interface {
-	TryFixUp() bool
+	tryFixUp() bool
 }
 
-func (e *Event) TryFixUp() bool {
+func (e *Event) tryFixUp() bool {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 

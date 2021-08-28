@@ -7,18 +7,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type EventBroadcaster struct {
+type eventBroadcaster struct {
 	listenChans     []chan []byte
 	listenChansLock sync.RWMutex
 }
 
-func NewEventBroadcaster() *EventBroadcaster {
-	return &EventBroadcaster{
+func newEventBroadcaster() *eventBroadcaster {
+	return &eventBroadcaster{
 		listenChans: make([]chan []byte, 0),
 	}
 }
 
-func (broadcaster *EventBroadcaster) OpenListenChan() <-chan []byte {
+func (broadcaster *eventBroadcaster) OpenListenChan() <-chan []byte {
 	broadcaster.listenChansLock.Lock()
 	defer broadcaster.listenChansLock.Unlock()
 
@@ -27,7 +27,7 @@ func (broadcaster *EventBroadcaster) OpenListenChan() <-chan []byte {
 	return ch
 }
 
-func (broadcaster *EventBroadcaster) CloseListenChan(listenCh <-chan []byte) {
+func (broadcaster *eventBroadcaster) CloseListenChan(listenCh <-chan []byte) {
 	broadcaster.listenChansLock.Lock()
 	defer broadcaster.listenChansLock.Unlock()
 
@@ -40,10 +40,10 @@ func (broadcaster *EventBroadcaster) CloseListenChan(listenCh <-chan []byte) {
 	}
 }
 
-func (broadcaster *EventBroadcaster) Broadcast(event AnyEvent) bool {
+func (broadcaster *eventBroadcaster) Broadcast(event AnyEvent) bool {
 	log.Debugf("Event: %#v", event)
 
-	if !event.TryFixUp() {
+	if !event.tryFixUp() {
 		log.Warnf("事件字段值无效")
 		return false
 	}

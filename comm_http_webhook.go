@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func commStartHTTPWebhook(urlString string, eventBroadcaster *EventBroadcaster) {
+func commStartHTTPWebhook(urlString string, eventBroadcaster *eventBroadcaster) {
 	log.Infof("正在启动 HTTP Webhook (%v)...", urlString)
 
 	uri, err := url.Parse(urlString)
