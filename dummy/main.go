@@ -56,5 +56,10 @@ func main() {
 		}
 	}()
 
+	go func() {
+		time.Sleep(time.Duration(10) * time.Second)
+		obdummy.Shutdown()
+	}()
+
 	obdummy.Run()
 }
