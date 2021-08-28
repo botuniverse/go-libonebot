@@ -7,40 +7,40 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Dispatcher struct {
-	outChans     []chan []byte
-	outChansLock sync.RWMutex
+type Broadcaster struct {
+	listenChans     []chan []byte
+	listenChansLock sync.RWMutex
 }
 
-func NewDispatcher() *Dispatcher {
-	return &Dispatcher{
-		outChans: make([]chan []byte, 0),
+func NewBroadcaster() *Broadcaster {
+	return &Broadcaster{
+		listenChans: make([]chan []byte, 0),
 	}
 }
 
-func (dispatcher *Dispatcher) OpenOutChan() <-chan []byte {
-	dispatcher.outChansLock.Lock()
-	defer dispatcher.outChansLock.Unlock()
+func (broadcaster *Broadcaster) OpenListenChan() <-chan []byte {
+	broadcaster.listenChansLock.Lock()
+	defer broadcaster.listenChansLock.Unlock()
 
 	outCh := make(chan []byte) // TODO: channel size
-	dispatcher.outChans = append(dispatcher.outChans, outCh)
+	broadcaster.listenChans = append(broadcaster.listenChans, outCh)
 	return outCh
 }
 
-func (dispatcher *Dispatcher) CloseOutChan(outCh <-chan []byte) {
-	dispatcher.outChansLock.Lock()
-	defer dispatcher.outChansLock.Unlock()
+func (broadcaster *Broadcaster) CloseListenChan(listenCh <-chan []byte) {
+	broadcaster.listenChansLock.Lock()
+	defer broadcaster.listenChansLock.Unlock()
 
-	for i, ch := range dispatcher.outChans {
-		if ch == outCh {
+	for i, ch := range broadcaster.listenChans {
+		if ch == listenCh {
 			close(ch)
-			dispatcher.outChans = append(dispatcher.outChans[:i], dispatcher.outChans[i+1:]...)
+			broadcaster.listenChans = append(broadcaster.listenChans[:i], broadcaster.listenChans[i+1:]...)
 			return
 		}
 	}
 }
 
-func (dispatcher *Dispatcher) Dispatch(event AnyEvent) bool {
+func (broadcaster *Broadcaster) Broadcast(event AnyEvent) bool {
 	log.Debugf("Event: %#v", event)
 
 	if !event.TryFixUp() {
@@ -54,9 +54,9 @@ func (dispatcher *Dispatcher) Dispatch(event AnyEvent) bool {
 		return false
 	}
 
-	dispatcher.outChansLock.RLock() // use read lock to allow emitting events concurrently
-	defer dispatcher.outChansLock.RUnlock()
-	for _, ch := range dispatcher.outChans {
+	broadcaster.listenChansLock.RLock() // use read lock to allow emitting events concurrently
+	defer broadcaster.listenChansLock.RUnlock()
+	for _, ch := range broadcaster.listenChans {
 		ch <- jsonBytes
 	}
 	return true

@@ -8,9 +8,9 @@ import (
 )
 
 type OneBot struct {
-	Platform        string
-	ActionMux       *action.Mux
-	eventDispatcher *event.Dispatcher
+	Platform         string
+	ActionMux        *action.Mux
+	eventBroadcaster *event.Broadcaster
 }
 
 func NewOneBot(platform string) *OneBot {
@@ -18,16 +18,16 @@ func NewOneBot(platform string) *OneBot {
 		log.Warnf("没有设置 OneBot 实现平台名称, 可能导致程序行为与预期不符")
 	}
 	return &OneBot{
-		Platform:        platform,
-		ActionMux:       action.NewMux(platform),
-		eventDispatcher: event.NewDispatcher(),
+		Platform:         platform,
+		ActionMux:        action.NewMux(platform),
+		eventBroadcaster: event.NewBroadcaster(),
 	}
 }
 
 func (ob *OneBot) startCommunicationMethods() {
 	comm.StartHTTPTask("127.0.0.1", 5700, ob.ActionMux)
-	comm.StartWSTask("127.0.0.1", 6700, ob.ActionMux, ob.eventDispatcher)
-	comm.StartHTTPWebhookTask("http://127.0.0.1:8080", ob.eventDispatcher)
+	comm.StartWSTask("127.0.0.1", 6700, ob.ActionMux, ob.eventBroadcaster)
+	comm.StartHTTPWebhookTask("http://127.0.0.1:8080", ob.eventBroadcaster)
 }
 
 func (ob *OneBot) Run() {
@@ -37,5 +37,5 @@ func (ob *OneBot) Run() {
 }
 
 func (ob *OneBot) PushEvent(event event.AnyEvent) {
-	ob.eventDispatcher.Dispatch(event)
+	ob.eventBroadcaster.Broadcast(event)
 }

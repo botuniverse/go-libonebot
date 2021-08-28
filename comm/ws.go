@@ -13,8 +13,8 @@ import (
 )
 
 type wsComm struct {
-	actionMux       *action.Mux
-	eventDispatcher *event.Dispatcher
+	actionMux        *action.Mux
+	eventBroadcaster *event.Broadcaster
 }
 
 var upgrader = websocket.Upgrader{
@@ -36,8 +36,8 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	// protect concurrent writes to the same connection
 	connWriteLock := &sync.Mutex{}
 
-	eventChan := comm.eventDispatcher.OpenOutChan()
-	defer comm.eventDispatcher.CloseOutChan(eventChan)
+	eventChan := comm.eventBroadcaster.OpenListenChan()
+	defer comm.eventBroadcaster.CloseListenChan(eventChan)
 	go func() {
 		// keep pushing events throught the connection
 		for eventBytes := range eventChan {
@@ -67,13 +67,13 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 }
 
 // Start a WebSocket commmunication task.
-func StartWSTask(host string, port uint16, actionMux *action.Mux, eventDispatcher *event.Dispatcher) {
+func StartWSTask(host string, port uint16, actionMux *action.Mux, eventBroadcaster *event.Broadcaster) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 
 	comm := &wsComm{
-		actionMux:       actionMux,
-		eventDispatcher: eventDispatcher,
+		actionMux:        actionMux,
+		eventBroadcaster: eventBroadcaster,
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
