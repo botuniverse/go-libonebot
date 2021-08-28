@@ -1,6 +1,7 @@
 package onebot
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -63,20 +64,29 @@ func httpFail(w http.ResponseWriter, retcode int, errFormat string, args ...inte
 	json.NewEncoder(w).Encode(failedResponse(retcode, err))
 }
 
-func commStartHTTP(host string, port uint16, onebot *OneBot) {
+func commStartHTTP(host string, port uint16, onebot *OneBot) commCloser {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 HTTP (%v)...", addr)
 
-	comm := &httpComm{
-		onebot: onebot,
-	}
+	comm := &httpComm{onebot: onebot}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
+	server := &http.Server{
+		Addr:    addr,
+		Handler: mux,
+	}
 
 	go func() {
-		if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Errorf("HTTP (%v) 启动失败, 错误: %v", addr, err)
+		} else {
+			log.Infof("HTTP (%v) 已关闭", addr)
 		}
-		log.Infof("HTTP (%v) 已关闭", addr)
 	}()
+
+	return func() {
+		if err := server.Shutdown(context.TODO() /* TODO */); err != nil {
+			log.Errorf("HTTP (%v) 关闭失败, 错误: %v", addr, err)
+		}
+	}
 }

@@ -8,13 +8,14 @@ import (
 
 type OneBot struct {
 	Platform string
-	// ActionMux *ActionMux
 
 	eventListenChans     []chan []byte
 	eventListenChansLock sync.RWMutex
 
 	handlers         map[string]Handler
 	extendedHandlers map[string]Handler
+
+	commClosers []commCloser
 }
 
 func NewOneBot(platform string) *OneBot {
@@ -23,24 +24,26 @@ func NewOneBot(platform string) *OneBot {
 	}
 	return &OneBot{
 		Platform: platform,
-		// ActionMux: NewActionMux(platform),
 
 		eventListenChans:     make([]chan []byte, 0),
 		eventListenChansLock: sync.RWMutex{},
 
 		handlers:         make(map[string]Handler),
 		extendedHandlers: make(map[string]Handler),
+
+		commClosers: make([]commCloser, 0),
 	}
 }
 
-func (ob *OneBot) startCommunicationMethods() {
-	commStartHTTP("127.0.0.1", 5700, ob)
-	commStartWS("127.0.0.1", 6700, ob)
-	commStartHTTPWebhook("http://127.0.0.1:8080", ob)
+func (ob *OneBot) Run() {
+	ob.startCommMethods()
+	log.Infof("OneBot 已启动")
+	select {}
 }
 
-func (ob *OneBot) Run() {
-	ob.startCommunicationMethods()
-	log.Infof("OneBot 运行中...")
-	select {}
+func (ob *OneBot) Shutdown() {
+	for _, closer := range ob.commClosers {
+		closer.Close()
+	}
+	log.Infof("OneBot 已关闭")
 }

@@ -1,6 +1,7 @@
 package onebot
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"sync"
@@ -63,20 +64,29 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func commStartWS(host string, port uint16, onebot *OneBot) {
+func commStartWS(host string, port uint16, onebot *OneBot) commCloser {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 
-	comm := &wsComm{
-		onebot: onebot,
-	}
+	comm := &wsComm{onebot: onebot}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
+	server := &http.Server{
+		Addr:    addr,
+		Handler: mux,
+	}
 
 	go func() {
-		if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Errorf("WebSocket (%v) 启动失败, 错误: %v", addr, err)
+		} else {
+			log.Infof("WebSocket (%v) 已关闭", addr)
 		}
-		log.Infof("WebSocket (%v) 已关闭", addr)
 	}()
+
+	return func() {
+		if err := server.Shutdown(context.TODO() /* TODO */); err != nil {
+			log.Errorf("WebSocket (%v) 关闭失败, 错误: %v", addr, err)
+		}
+	}
 }

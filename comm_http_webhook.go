@@ -8,17 +8,17 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func commStartHTTPWebhook(urlString string, onebot *OneBot) {
+func commStartHTTPWebhook(urlString string, onebot *OneBot) commCloser {
 	log.Infof("正在启动 HTTP Webhook (%v)...", urlString)
 
 	uri, err := url.Parse(urlString)
 	if err != nil {
 		log.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 错误: %v", urlString, err)
-		return
+		return nil
 	}
 	if uri.Scheme != "http" && uri.Scheme != "https" {
 		log.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 必须使用 HTTP 或 HTTPS 协议", urlString)
-		return
+		return nil
 	}
 
 	eventChan := onebot.openEventListenChan()
@@ -31,4 +31,8 @@ func commStartHTTPWebhook(urlString string, onebot *OneBot) {
 		}
 		log.Warnf("HTTP Webhook (%v) 已关闭", urlString)
 	}()
+
+	return func() {
+		onebot.closeEventListenChan(eventChan)
+	}
 }

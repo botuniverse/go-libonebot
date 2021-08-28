@@ -29,11 +29,10 @@ func (ob *OneBot) PushEvent(event AnyEvent) bool {
 }
 
 func (ob *OneBot) openEventListenChan() <-chan []byte {
-	ob.eventListenChansLock.Lock()
-	defer ob.eventListenChansLock.Unlock()
-
 	ch := make(chan []byte) // TODO: channel size
+	ob.eventListenChansLock.Lock()
 	ob.eventListenChans = append(ob.eventListenChans, ch)
+	ob.eventListenChansLock.Unlock()
 	return ch
 }
 
@@ -43,6 +42,7 @@ func (ob *OneBot) closeEventListenChan(ch <-chan []byte) {
 
 	for i, c := range ob.eventListenChans {
 		if c == ch {
+			close(c)
 			ob.eventListenChans = append(ob.eventListenChans[:i], ob.eventListenChans[i+1:]...)
 			return
 		}
