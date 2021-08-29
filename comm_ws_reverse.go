@@ -1,1 +1,1 @@
-package onebot
+package libonebot

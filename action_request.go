@@ -1,4 +1,4 @@
-package onebot
+package libonebot
 
 import (
 	"errors"

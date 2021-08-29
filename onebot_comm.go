@@ -1,4 +1,4 @@
-package onebot
+package libonebot
 
 func (ob *OneBot) startCommMethods() {
 	ob.commClosersLock.Lock()
