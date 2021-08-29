@@ -37,7 +37,7 @@ func (params *Params) GetBool(key string) (bool, error) {
 	return val.Bool(), nil
 }
 
-func (params *Params) GetInt(key string) (int64, error) {
+func (params *Params) GetInt64(key string) (int64, error) {
 	val := params.JSON.Get(key)
 	if !val.Exists() {
 		return 0, errorMissingParam(key)
@@ -105,8 +105,8 @@ func (getter *ParamGetter) GetBool(key string) (bool, bool) {
 	return val, true
 }
 
-func (getter *ParamGetter) GetInt(key string) (int64, bool) {
-	val, err := getter.params.GetInt(key)
+func (getter *ParamGetter) GetInt64(key string) (int64, bool) {
+	val, err := getter.params.GetInt64(key)
 	if err != nil {
 		getter.w.WriteFailed(RetCodeParamError, err)
 		return val, false
