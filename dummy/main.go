@@ -24,7 +24,7 @@ func main() {
 	})
 
 	obdummy.HandleFunc(ob.ActionSendMessage, func(w ob.ResponseWriter, r *ob.Request) {
-		p := ob.NewParamGetter(&r.Params, w)
+		p := ob.NewParamGetter(r.Params, w)
 		userID, ok := p.GetString("user_id")
 		if !ok {
 			return
@@ -34,6 +34,7 @@ func main() {
 			return
 		}
 		log.Debugf("Send message: %#v, to %v", msg, userID)
+		w.WriteData(msg)
 	})
 
 	obdummy.HandleFuncExtended("do_something", func(w ob.ResponseWriter, r *ob.Request) {

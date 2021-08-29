@@ -11,13 +11,30 @@ type easyMap struct {
 	JSON gjson.Result
 }
 
-func easyMapFromMap(m map[string]interface{}) easyMap {
+func newEasyMapFromMap(m map[string]interface{}) *easyMap {
 	j, _ := json.Marshal(m)
-	return easyMap{gjson.Parse(bytesToString(j))}
+	return &easyMap{gjson.Parse(bytesToString(j))}
 }
 
-func easyMapFromJSON(j gjson.Result) easyMap {
-	return easyMap{j}
+func newEasyMapFromJSON(j gjson.Result) *easyMap {
+	return &easyMap{j}
+}
+
+func (m easyMap) MarshalJSON() ([]byte, error) {
+	return stringToBytes(m.JSON.Raw), nil
+}
+
+func (m *easyMap) UnmarshalJSON(data []byte) error {
+	s := bytesToString(data)
+	if !gjson.Valid(s) {
+		return fmt.Errorf("JSON 语法错误")
+	}
+	j := gjson.Parse(s)
+	if !j.IsObject() {
+		return fmt.Errorf("必须是 JSON 对象")
+	}
+	m.JSON = j
+	return nil
 }
 
 func errorMissingField(key string) error {
@@ -85,18 +102,7 @@ func (m *easyMap) GetMessage(key string) (Message, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if val.Type == gjson.String {
-		return Message{TextSegment(val.Str)}, nil
-	}
-
-	if val.IsObject() {
-		return MessageFromJSON("[" + val.Raw + "]")
-	} else if val.IsArray() {
-		return MessageFromJSON(val.Raw)
-	} else {
-		return nil, errorInvalidField(key)
-	}
+	return MessageFromJSON(val)
 }
 
 func (m *easyMap) GetMap(key string) (easyMap, error) {

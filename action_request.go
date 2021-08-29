@@ -9,7 +9,7 @@ import (
 
 type Request struct {
 	Action Action
-	Params easyMap
+	Params *easyMap
 	Echo   interface{}
 }
 
@@ -61,7 +61,7 @@ func parseActionRequest(prefix string, actionBody string) (Request, error) {
 
 	r := Request{
 		Action: action,
-		Params: easyMapFromJSON(actionJSON.Get("params")),
+		Params: newEasyMapFromJSON(actionJSON.Get("params")),
 		Echo:   actionJSON.Get("echo").Value(),
 	}
 	return r, nil

@@ -3,22 +3,32 @@ package onebot
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/tidwall/gjson"
 )
 
 type Message []Segment
 
 // TODO: Reduce and other methods
 
-func MessageFromJSON(msgJSONString string) (Message, error) {
+func MessageFromJSON(j gjson.Result) (Message, error) {
+	if j.Type == gjson.String {
+		return Message{TextSegment(j.Str)}, nil
+	}
+
+	var msgJSONString string
+	if j.IsObject() {
+		msgJSONString = "[" + j.Raw + "]"
+	} else if j.IsArray() {
+		msgJSONString = j.Raw
+	} else {
+		return nil, fmt.Errorf("消息解析失败, 不是有效的消息格式")
+	}
+
 	msg := Message{}
 	err := json.Unmarshal(stringToBytes(msgJSONString), &msg)
 	if err != nil {
 		return nil, fmt.Errorf("消息解析失败, 错误: %v", err)
-	}
-	for idx, seg := range msg {
-		if seg.Type == "" || seg.Data == nil {
-			return nil, fmt.Errorf("消息解析失败, 第 %v 个消息段无效", idx)
-		}
 	}
 	return msg, nil
 }
