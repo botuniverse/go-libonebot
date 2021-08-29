@@ -8,6 +8,7 @@ import (
 
 type OneBot struct {
 	Platform string
+	Config   *Config
 
 	eventListenChans     []chan marshaledEvent
 	eventListenChansLock sync.RWMutex
@@ -20,12 +21,10 @@ type OneBot struct {
 	wg              sync.WaitGroup
 }
 
-func NewOneBot(platform string) *OneBot {
-	if platform == "" {
-		log.Warnf("没有设置 OneBot 实现平台名称, 可能导致程序行为与预期不符")
-	}
+func NewOneBot(platform string, config *Config) *OneBot {
 	return &OneBot{
 		Platform: platform,
+		Config:   config,
 
 		eventListenChans:     make([]chan marshaledEvent, 0),
 		eventListenChansLock: sync.RWMutex{},
@@ -39,6 +38,14 @@ func NewOneBot(platform string) *OneBot {
 }
 
 func (ob *OneBot) Run() {
+	if ob.Platform == "" {
+		log.Errorf("OneBot 无法启动, 没有提供 OneBot 平台名称")
+		return
+	}
+	if ob.Config == nil {
+		log.Errorf("OneBot 无法启动, 没有提供 OneBot 配置")
+		return
+	}
 	ob.startCommMethods()
 	log.Infof("OneBot 已启动")
 	ob.wg.Add(1)
