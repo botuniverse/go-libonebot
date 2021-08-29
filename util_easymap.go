@@ -137,3 +137,7 @@ func (m *easyMap) Set(key string, value interface{}) {
 	m.inner.Index = 0
 	m.inner.Raw, _ = sjson.Set(m.inner.Raw, key, value)
 }
+
+func (m *easyMap) Value() map[string]interface{} {
+	return m.inner.Value().(map[string]interface{})
+}
