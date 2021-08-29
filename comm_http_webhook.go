@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func commStartHTTPWebhook(c ConfigCommHTTPWebhook, onebot *OneBot) commCloser {
+func commStartHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot) commCloser {
 	log.Infof("正在启动 HTTP Webhook (%v)...", c.URL)
 
 	uri, err := url.Parse(c.URL)
@@ -22,7 +22,7 @@ func commStartHTTPWebhook(c ConfigCommHTTPWebhook, onebot *OneBot) commCloser {
 		return nil
 	}
 
-	eventChan := onebot.openEventListenChan()
+	eventChan := ob.openEventListenChan()
 	httpClient := &http.Client{}
 
 	wg := &sync.WaitGroup{}
@@ -40,7 +40,7 @@ func commStartHTTPWebhook(c ConfigCommHTTPWebhook, onebot *OneBot) commCloser {
 	}()
 
 	return func() {
-		onebot.closeEventListenChan(eventChan)
+		ob.closeEventListenChan(eventChan)
 		wg.Wait()
 	}
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type httpComm struct {
-	onebot *OneBot
+	ob *OneBot
 }
 
 func (comm *httpComm) handleGET(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +53,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := comm.onebot.handleAction(bytesToString(bodyBytes))
+	response := comm.ob.handleAction(bytesToString(bodyBytes))
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -63,11 +63,11 @@ func httpFail(w http.ResponseWriter, retcode int, errFormat string, args ...inte
 	json.NewEncoder(w).Encode(failedResponse(retcode, err))
 }
 
-func commStartHTTP(c ConfigCommHTTP, onebot *OneBot) commCloser {
+func commStartHTTP(c ConfigCommHTTP, ob *OneBot) commCloser {
 	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
 	log.Infof("正在启动 HTTP (%v)...", addr)
 
-	comm := &httpComm{onebot: onebot}
+	comm := &httpComm{ob: ob}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
 	server := &http.Server{
