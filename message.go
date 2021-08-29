@@ -14,6 +14,17 @@ func (m Message) String() string {
 	return "onebot.Message" + bytesToString(j)
 }
 
+func (m *Message) Reduce() {
+	for i := 0; i < len(*m)-1; i++ {
+		j := i + 1
+		for ; j < len(*m) && (*m)[i].TryMerge((*m)[j]); j++ {
+		}
+		if i+1 != j {
+			*m = append((*m)[:i+1], (*m)[j:]...)
+		}
+	}
+}
+
 func MessageFromJSON(j gjson.Result) (Message, error) {
 	if j.Type == gjson.String {
 		return Message{TextSegment(j.Str)}, nil

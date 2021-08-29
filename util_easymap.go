@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 )
 
 type easyMap struct {
-	JSON gjson.Result
+	inner gjson.Result // must be a json object
 }
 
 func newEasyMapFromMap(m map[string]interface{}) *easyMap {
@@ -21,7 +22,7 @@ func newEasyMapFromJSON(j gjson.Result) *easyMap {
 }
 
 func (m easyMap) MarshalJSON() ([]byte, error) {
-	return stringToBytes(m.JSON.Raw), nil
+	return stringToBytes(m.inner.Raw), nil
 }
 
 func (m *easyMap) UnmarshalJSON(data []byte) error {
@@ -33,7 +34,7 @@ func (m *easyMap) UnmarshalJSON(data []byte) error {
 	if !j.IsObject() {
 		return fmt.Errorf("必须是 JSON 对象")
 	}
-	m.JSON = j
+	m.inner = j
 	return nil
 }
 
@@ -46,7 +47,7 @@ func errorInvalidField(key string) error {
 }
 
 func (m *easyMap) Get(key string) (gjson.Result, error) {
-	val := m.JSON.Get(key)
+	val := m.inner.Get(key)
 	if !val.Exists() {
 		return gjson.Result{}, errorMissingField(key)
 	}
@@ -54,7 +55,7 @@ func (m *easyMap) Get(key string) (gjson.Result, error) {
 }
 
 func (m *easyMap) GetBool(key string) (bool, error) {
-	val := m.JSON.Get(key)
+	val := m.inner.Get(key)
 	if !val.Exists() {
 		return false, errorMissingField(key)
 	}
@@ -65,7 +66,7 @@ func (m *easyMap) GetBool(key string) (bool, error) {
 }
 
 func (m *easyMap) GetInt64(key string) (int64, error) {
-	val := m.JSON.Get(key)
+	val := m.inner.Get(key)
 	if !val.Exists() {
 		return 0, errorMissingField(key)
 	}
@@ -76,7 +77,7 @@ func (m *easyMap) GetInt64(key string) (int64, error) {
 }
 
 func (m *easyMap) GetFloat64(key string) (float64, error) {
-	val := m.JSON.Get(key)
+	val := m.inner.Get(key)
 	if !val.Exists() {
 		return 0, errorMissingField(key)
 	}
@@ -87,7 +88,7 @@ func (m *easyMap) GetFloat64(key string) (float64, error) {
 }
 
 func (m *easyMap) GetString(key string) (string, error) {
-	val := m.JSON.Get(key)
+	val := m.inner.Get(key)
 	if !val.Exists() {
 		return "", errorMissingField(key)
 	}
@@ -98,7 +99,7 @@ func (m *easyMap) GetString(key string) (string, error) {
 }
 
 func (m *easyMap) GetMessage(key string) (Message, error) {
-	val := m.JSON.Get(key)
+	val := m.inner.Get(key)
 	if !val.Exists() {
 		return Message{}, errorMissingField(key)
 	}
@@ -106,7 +107,7 @@ func (m *easyMap) GetMessage(key string) (Message, error) {
 }
 
 func (m *easyMap) GetMap(key string) (easyMap, error) {
-	val := m.JSON.Get(key)
+	val := m.inner.Get(key)
 	if !val.Exists() {
 		return easyMap{}, errorMissingField(key)
 	}
@@ -119,7 +120,7 @@ func (m *easyMap) GetMap(key string) (easyMap, error) {
 }
 
 func (m *easyMap) GetArray(key string) ([]interface{}, error) {
-	val := m.JSON.Get(key)
+	val := m.inner.Get(key)
 	if !val.Exists() {
 		return nil, errorMissingField(key)
 	}
@@ -129,4 +130,10 @@ func (m *easyMap) GetArray(key string) ([]interface{}, error) {
 	} else {
 		return nil, errorInvalidField(key)
 	}
+}
+
+func (m *easyMap) Set(key string, value interface{}) {
+	// TODO: is this safe?
+	m.inner.Index = 0
+	m.inner.Raw, _ = sjson.Set(m.inner.Raw, key, value)
 }
