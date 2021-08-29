@@ -6,6 +6,7 @@ func (ob *OneBot) startCommMethods() {
 	ob.startCommMethodsHTTP()
 	ob.startCommMethodsHTTPWebhook()
 	ob.startCommMethodsWS()
+	ob.startCommMethodsWSReverse()
 }
 
 func (ob *OneBot) startCommMethodsHTTP() {
@@ -32,5 +33,14 @@ func (ob *OneBot) startCommMethodsWS() {
 	}
 	for _, c := range ob.Config.CommMethods.WS {
 		ob.commClosers = append(ob.commClosers, commStartWS(c, ob))
+	}
+}
+
+func (ob *OneBot) startCommMethodsWSReverse() {
+	if ob.Config.CommMethods.WSReverse == nil {
+		return
+	}
+	for _, c := range ob.Config.CommMethods.WSReverse {
+		ob.commClosers = append(ob.commClosers, commStartWSReverse(c, ob))
 	}
 }
