@@ -9,7 +9,10 @@ import (
 
 type Message []Segment
 
-// TODO: Reduce and other methods
+func (m Message) String() string {
+	j, _ := json.Marshal(m)
+	return "onebot.Message" + bytesToString(j)
+}
 
 func MessageFromJSON(j gjson.Result) (Message, error) {
 	if j.Type == gjson.String {

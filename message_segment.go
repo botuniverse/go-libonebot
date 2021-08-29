@@ -10,6 +10,11 @@ type Segment struct {
 	Data *easyMap `json:"data"`
 }
 
+func (s Segment) String() string {
+	j, _ := json.Marshal(s)
+	return "onebot.Segment" + bytesToString(j)
+}
+
 // UnmarshalJSON implements json.Unmarshaler for `Segment` with validation.
 func (s *Segment) UnmarshalJSON(b []byte) error {
 	tmp := struct {
