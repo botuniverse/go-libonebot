@@ -41,7 +41,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		for event := range eventChan {
 			log.Debugf("通过 WebSocket (%v) 推送事件, %v", comm.addr, event.name)
 			connWriteLock.Lock()
-			conn.WriteMessage(websocket.TextMessage, event.bytes)
+			conn.WriteMessage(websocket.TextMessage, event.bytes) // TODO: handle err
 			connWriteLock.Unlock()
 		}
 	}()
@@ -60,7 +60,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 
 		response := comm.ob.handleAction(bytesToString(messageBytes))
 		connWriteLock.Lock()
-		conn.WriteJSON(response)
+		conn.WriteJSON(response) // TODO: handle err
 		connWriteLock.Unlock()
 	}
 }
@@ -89,5 +89,6 @@ func commStartWS(c ConfigCommWS, ob *OneBot) commCloser {
 		if err := server.Shutdown(context.TODO() /* TODO */); err != nil {
 			log.Errorf("WebSocket (%v) 关闭失败, 错误: %v", addr, err)
 		}
+		// TODO: wg.Wait() 后再输出已关闭
 	}
 }

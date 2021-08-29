@@ -87,5 +87,6 @@ func commStartHTTP(c ConfigCommHTTP, ob *OneBot) commCloser {
 		if err := server.Shutdown(context.TODO() /* TODO */); err != nil {
 			log.Errorf("HTTP (%v) 关闭失败, 错误: %v", addr, err)
 		}
+		// TODO: wg.Wait() 后再输出已关闭
 	}
 }
