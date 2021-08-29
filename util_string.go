@@ -1,11 +1,11 @@
-package utils
+package onebot
 
 import (
 	"reflect"
 	"unsafe"
 )
 
-func StringToBytes(s string) []byte {
+func stringToBytes(s string) []byte {
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	bh := reflect.SliceHeader{
 		Data: sh.Data,
@@ -15,6 +15,6 @@ func StringToBytes(s string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&bh))
 }
 
-func BytesToString(b []byte) string {
+func bytesToString(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }

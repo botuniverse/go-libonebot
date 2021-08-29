@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/botuniverse/go-libonebot/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -54,7 +53,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := comm.onebot.handleAction(utils.BytesToString(bodyBytes))
+	response := comm.onebot.handleAction(bytesToString(bodyBytes))
 	json.NewEncoder(w).Encode(response)
 }
 

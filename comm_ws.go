@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/botuniverse/go-libonebot/utils"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 )
@@ -59,7 +58,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		response := comm.onebot.handleAction(utils.BytesToString(messageBytes))
+		response := comm.onebot.handleAction(bytesToString(messageBytes))
 		connWriteLock.Lock()
 		conn.WriteJSON(response)
 		connWriteLock.Unlock()

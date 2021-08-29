@@ -3,8 +3,6 @@ package onebot
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/botuniverse/go-libonebot/utils"
 )
 
 type Message []Segment
@@ -13,7 +11,7 @@ type Message []Segment
 
 func MessageFromJSON(msgJSONString string) (Message, error) {
 	msg := Message{}
-	err := json.Unmarshal(utils.StringToBytes(msgJSONString), &msg)
+	err := json.Unmarshal(stringToBytes(msgJSONString), &msg)
 	if err != nil {
 		return nil, fmt.Errorf("消息解析失败, 错误: %v", err)
 	}
