@@ -5,20 +5,18 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func commStartHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot) commCloser {
-	log.Infof("正在启动 HTTP Webhook (%v)...", c.URL)
+	ob.Logger.Infof("正在启动 HTTP Webhook (%v)...", c.URL)
 
 	u, err := url.Parse(c.URL)
 	if err != nil {
-		log.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 错误: %v", c.URL, err)
+		ob.Logger.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 错误: %v", c.URL, err)
 		return nil
 	}
 	if u.Scheme != "http" && u.Scheme != "https" {
-		log.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 必须使用 HTTP 或 HTTPS 协议", c.URL)
+		ob.Logger.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 必须使用 HTTP 或 HTTPS 协议", c.URL)
 		return nil
 	}
 
@@ -33,7 +31,7 @@ func commStartHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot) commCloser {
 			// TODO: use special User-Agent
 			// TODO: check status code
 			// TODO: timeout
-			log.Debugf("通过 HTTP Webhook (%v) 推送事件 %v", c.URL, event.name)
+			ob.Logger.Debugf("通过 HTTP Webhook (%v) 推送事件 %v", c.URL, event.name)
 			httpClient.Post(c.URL, "application/json", bytes.NewReader(event.bytes))
 		}
 	}()
@@ -41,6 +39,6 @@ func commStartHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot) commCloser {
 	return func() {
 		ob.closeEventListenChan(eventChan)
 		wg.Wait()
-		log.Infof("HTTP Webhook (%v) 已关闭", c.URL)
+		ob.Logger.Infof("HTTP Webhook (%v) 已关闭", c.URL)
 	}
 }

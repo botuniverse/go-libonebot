@@ -3,12 +3,13 @@ package libonebot
 import (
 	"sync"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 type OneBot struct {
 	Platform string
 	Config   *Config
+	Logger   *logrus.Logger
 
 	eventListenChans     []chan marshaledEvent
 	eventListenChansLock sync.RWMutex
@@ -25,6 +26,7 @@ func NewOneBot(platform string, config *Config) *OneBot {
 	return &OneBot{
 		Platform: platform,
 		Config:   config,
+		Logger:   logrus.New(),
 
 		eventListenChans:     make([]chan marshaledEvent, 0),
 		eventListenChansLock: sync.RWMutex{},
@@ -39,18 +41,18 @@ func NewOneBot(platform string, config *Config) *OneBot {
 
 func (ob *OneBot) Run() {
 	if ob.Platform == "" {
-		log.Errorf("OneBot 无法启动, 没有提供 OneBot 平台名称")
+		ob.Logger.Errorf("OneBot 无法启动, 没有提供 OneBot 平台名称")
 		return
 	}
 	if ob.Config == nil {
-		log.Errorf("OneBot 无法启动, 没有提供 OneBot 配置")
+		ob.Logger.Errorf("OneBot 无法启动, 没有提供 OneBot 配置")
 		return
 	}
 	ob.startCommMethods()
-	log.Infof("OneBot 已启动")
+	ob.Logger.Infof("OneBot 已启动")
 	ob.wg.Add(1)
 	ob.wg.Wait()
-	log.Infof("OneBot 已关闭")
+	ob.Logger.Infof("OneBot 已关闭")
 }
 
 func (ob *OneBot) Shutdown() {

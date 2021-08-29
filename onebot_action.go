@@ -2,8 +2,6 @@ package libonebot
 
 import (
 	"fmt"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (ob *OneBot) HandleFunc(action coreAction, handler func(ResponseWriter, *Request)) {
@@ -32,11 +30,11 @@ func (ob *OneBot) handleAction(actionBody string) (resp Response) {
 	r, err := parseActionRequest(ob.Platform, actionBody)
 	if err != nil {
 		err := fmt.Errorf("Action 请求解析失败, 错误: %v", err)
-		log.Warn(err)
+		ob.Logger.Warn(err)
 		w.WriteFailed(RetCodeInvalidRequest, err)
 		return
 	}
-	log.Debugf("Action request: %#v", r)
+	ob.Logger.Debugf("Action request: %#v", r)
 
 	// once we got the `echo` field, set the `echo` field in the response
 	resp.Echo = r.Echo
@@ -51,12 +49,12 @@ func (ob *OneBot) handleAction(actionBody string) (resp Response) {
 	handler := (*handlers)[r.Action.Name]
 	if handler == nil {
 		err := fmt.Errorf("Action `%v` 不存在", r.Action)
-		log.Warn(err)
+		ob.Logger.Warn(err)
 		w.WriteFailed(RetCodeActionNotFound, err)
 		return
 	}
 
-	log.Infof("Action `%v` 开始处理", r.Action)
+	ob.Logger.Infof("Action `%v` 开始处理", r.Action)
 	handler.HandleAction(w, &r)
 	return
 }

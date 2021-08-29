@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
-	log "github.com/sirupsen/logrus"
 )
 
 type wsComm struct {
@@ -22,13 +21,13 @@ var wsUpgrader = websocket.Upgrader{
 }
 
 func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
-	log.Infof("收到来自 %v 的 WebSocket (%v) 连接请求", r.RemoteAddr, comm.addr)
+	comm.ob.Logger.Infof("收到来自 %v 的 WebSocket (%v) 连接请求", r.RemoteAddr, comm.addr)
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Errorf("WebSocket (%v) 连接失败, 错误: %v", comm.addr, err)
+		comm.ob.Logger.Errorf("WebSocket (%v) 连接失败, 错误: %v", comm.addr, err)
 		return
 	}
-	log.Infof("WebSocket (%v) 连接成功", comm.addr)
+	comm.ob.Logger.Infof("WebSocket (%v) 连接成功", comm.addr)
 	defer conn.Close()
 
 	// protect concurrent writes to the same connection
@@ -39,7 +38,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		// keep pushing events throught the connection
 		for event := range eventChan {
-			log.Debugf("通过 WebSocket (%v) 推送事件, %v", comm.addr, event.name)
+			comm.ob.Logger.Debugf("通过 WebSocket (%v) 推送事件, %v", comm.addr, event.name)
 			connWriteLock.Lock()
 			conn.WriteMessage(websocket.TextMessage, event.bytes) // TODO: handle err
 			connWriteLock.Unlock()
@@ -51,9 +50,9 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		_, messageBytes, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				log.Infof("WebSocket (%v) 连接断开", comm.addr)
+				comm.ob.Logger.Infof("WebSocket (%v) 连接断开", comm.addr)
 			} else {
-				log.Errorf("WebSocket (%v) 连接异常断开, 错误: %v", comm.addr, err)
+				comm.ob.Logger.Errorf("WebSocket (%v) 连接异常断开, 错误: %v", comm.addr, err)
 			}
 			break
 		}
@@ -67,7 +66,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 
 func commStartWS(c ConfigCommWS, ob *OneBot) commCloser {
 	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
-	log.Infof("正在启动 WebSocket (%v)...", addr)
+	ob.Logger.Infof("正在启动 WebSocket (%v)...", addr)
 
 	comm := &wsComm{ob: ob, addr: addr}
 	mux := http.NewServeMux()
@@ -79,15 +78,15 @@ func commStartWS(c ConfigCommWS, ob *OneBot) commCloser {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Errorf("WebSocket (%v) 启动失败, 错误: %v", addr, err)
+			ob.Logger.Errorf("WebSocket (%v) 启动失败, 错误: %v", addr, err)
 		} else {
-			log.Infof("WebSocket (%v) 已关闭", addr)
+			ob.Logger.Infof("WebSocket (%v) 已关闭", addr)
 		}
 	}()
 
 	return func() {
 		if err := server.Shutdown(context.TODO() /* TODO */); err != nil {
-			log.Errorf("WebSocket (%v) 关闭失败, 错误: %v", addr, err)
+			ob.Logger.Errorf("WebSocket (%v) 关闭失败, 错误: %v", addr, err)
 		}
 		// TODO: wg.Wait() 后再输出已关闭
 	}

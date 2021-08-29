@@ -2,19 +2,17 @@ package libonebot
 
 import (
 	"encoding/json"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (ob *OneBot) Push(event AnyEvent) bool {
 	if !event.tryFixUp(ob.Platform) {
-		log.Warnf("事件字段值无效")
+		ob.Logger.Warnf("事件字段值无效")
 		return false
 	}
 
 	eventJSONBytes, err := json.Marshal(event)
 	if err != nil {
-		log.Warnf("事件序列化失败, 错误: %v", err)
+		ob.Logger.Warnf("事件序列化失败, 错误: %v", err)
 		return false
 	}
 
