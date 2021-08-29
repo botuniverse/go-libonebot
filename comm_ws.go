@@ -65,8 +65,8 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func commStartWS(host string, port uint16, onebot *OneBot) commCloser {
-	addr := fmt.Sprintf("%s:%d", host, port)
+func commStartWS(c ConfigCommWS, onebot *OneBot) commCloser {
+	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
 	log.Infof("正在启动 WebSocket (%v)...", addr)
 
 	comm := &wsComm{onebot: onebot, addr: addr}

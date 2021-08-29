@@ -63,8 +63,8 @@ func httpFail(w http.ResponseWriter, retcode int, errFormat string, args ...inte
 	json.NewEncoder(w).Encode(failedResponse(retcode, err))
 }
 
-func commStartHTTP(host string, port uint16, onebot *OneBot) commCloser {
-	addr := fmt.Sprintf("%s:%d", host, port)
+func commStartHTTP(c ConfigCommHTTP, onebot *OneBot) commCloser {
+	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
 	log.Infof("正在启动 HTTP (%v)...", addr)
 
 	comm := &httpComm{onebot: onebot}

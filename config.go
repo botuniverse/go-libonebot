@@ -11,25 +11,30 @@ type Config struct {
 	} `mapstructure:"auth"`
 
 	CommMethods struct {
-		HTTP []struct {
-			Host string `mapstructure:"host"`
-			Port uint16 `mapstructure:"port"`
-		} `mapstructure:"http"`
-
-		HTTPWebhook []struct {
-			URL     string `mapstructure:"url"`
-			Timeout uint32 `mapstructure:"timeout"`
-			Secret  string `mapstructure:"secret"`
-		} `mapstructure:"http_webhook"`
-
-		WS []struct {
-			Host string `mapstructure:"host"`
-			Port uint16 `mapstructure:"port"`
-		} `mapstructure:"ws"`
-
-		WSReverse []struct {
-			URL               string `mapstructure:"url"`
-			ReconnectInterval uint32 `mapstructure:"reconnect_interval"`
-		} `mapstructure:"ws_reverse"`
+		HTTP        []ConfigCommHTTP        `mapstructure:"http"`
+		HTTPWebhook []ConfigCommHTTPWebhook `mapstructure:"http_webhook"`
+		WS          []ConfigCommWS          `mapstructure:"ws"`
+		WSReverse   []ConfigCommWSReverse   `mapstructure:"ws_reverse"`
 	} `mapstructure:"comm_methods"`
+}
+
+type ConfigCommHTTP struct {
+	Host string `mapstructure:"host"`
+	Port uint16 `mapstructure:"port"`
+}
+
+type ConfigCommHTTPWebhook struct {
+	URL     string `mapstructure:"url"`
+	Timeout uint32 `mapstructure:"timeout"`
+	Secret  string `mapstructure:"secret"`
+}
+
+type ConfigCommWS struct {
+	Host string `mapstructure:"host"`
+	Port uint16 `mapstructure:"port"`
+}
+
+type ConfigCommWSReverse struct {
+	URL               string `mapstructure:"url"`
+	ReconnectInterval uint32 `mapstructure:"reconnect_interval"`
 }

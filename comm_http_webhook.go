@@ -9,16 +9,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func commStartHTTPWebhook(urlString string, onebot *OneBot) commCloser {
-	log.Infof("正在启动 HTTP Webhook (%v)...", urlString)
+func commStartHTTPWebhook(c ConfigCommHTTPWebhook, onebot *OneBot) commCloser {
+	log.Infof("正在启动 HTTP Webhook (%v)...", c.URL)
 
-	uri, err := url.Parse(urlString)
+	uri, err := url.Parse(c.URL)
 	if err != nil {
-		log.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 错误: %v", urlString, err)
+		log.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 错误: %v", c.URL, err)
 		return nil
 	}
 	if uri.Scheme != "http" && uri.Scheme != "https" {
-		log.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 必须使用 HTTP 或 HTTPS 协议", urlString)
+		log.Warnf("HTTP Webhook (%v) 启动失败, URL 不合法, 必须使用 HTTP 或 HTTPS 协议", c.URL)
 		return nil
 	}
 
@@ -33,10 +33,10 @@ func commStartHTTPWebhook(urlString string, onebot *OneBot) commCloser {
 			// TODO: use special User-Agent
 			// TODO: check status code
 			// TODO: timeout
-			log.Debugf("通过 HTTP Webhook (%v) 推送事件 %v", urlString, event.name)
-			httpClient.Post(urlString, "application/json", bytes.NewReader(event.bytes))
+			log.Debugf("通过 HTTP Webhook (%v) 推送事件 %v", c.URL, event.name)
+			httpClient.Post(c.URL, "application/json", bytes.NewReader(event.bytes))
 		}
-		log.Infof("HTTP Webhook (%v) 已关闭", urlString)
+		log.Infof("HTTP Webhook (%v) 已关闭", c.URL)
 	}()
 
 	return func() {
