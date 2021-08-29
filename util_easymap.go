@@ -98,17 +98,17 @@ func (m *easyMap) GetString(key string) (string, error) {
 }
 
 func (m *easyMap) GetMessage(key string) (Message, error) {
-	val, err := m.Get(key)
-	if err != nil {
-		return nil, err
+	val := m.JSON.Get(key)
+	if !val.Exists() {
+		return Message{}, errorMissingField(key)
 	}
 	return MessageFromJSON(val)
 }
 
 func (m *easyMap) GetMap(key string) (easyMap, error) {
-	val, err := m.Get(key)
-	if err != nil {
-		return easyMap{}, err
+	val := m.JSON.Get(key)
+	if !val.Exists() {
+		return easyMap{}, errorMissingField(key)
 	}
 
 	if val.IsObject() {
@@ -119,9 +119,9 @@ func (m *easyMap) GetMap(key string) (easyMap, error) {
 }
 
 func (m *easyMap) GetArray(key string) ([]interface{}, error) {
-	val, err := m.Get(key)
-	if err != nil {
-		return nil, err
+	val := m.JSON.Get(key)
+	if !val.Exists() {
+		return nil, errorMissingField(key)
 	}
 
 	if val.IsArray() {

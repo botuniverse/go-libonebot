@@ -2,8 +2,6 @@ package onebot
 
 import (
 	"fmt"
-
-	"github.com/tidwall/gjson"
 )
 
 type ParamGetter struct {
@@ -17,15 +15,6 @@ func NewParamGetter(params *easyMap, w ResponseWriter) *ParamGetter {
 
 func errorParam(err error) error {
 	return fmt.Errorf("参数错误: %v", err)
-}
-
-func (getter *ParamGetter) Get(key string) (gjson.Result, bool) {
-	val, err := getter.params.Get(key)
-	if err != nil {
-		getter.w.WriteFailed(RetCodeParamError, errorParam(err))
-		return val, false
-	}
-	return val, true
 }
 
 func (getter *ParamGetter) GetBool(key string) (bool, bool) {
