@@ -15,8 +15,9 @@ type OneBot struct {
 	handlers         map[string]Handler
 	extendedHandlers map[string]Handler
 
-	commClosers []commCloser
-	wg          sync.WaitGroup
+	commClosers     []commCloser
+	commClosersLock sync.Mutex
+	wg              sync.WaitGroup
 }
 
 func NewOneBot(platform string) *OneBot {
@@ -46,8 +47,11 @@ func (ob *OneBot) Run() {
 }
 
 func (ob *OneBot) Shutdown() {
+	ob.commClosersLock.Lock()
 	for _, closer := range ob.commClosers {
 		closer.Close()
 	}
+	ob.commClosers = make([]commCloser, 0)
+	ob.commClosersLock.Unlock()
 	ob.wg.Done()
 }
