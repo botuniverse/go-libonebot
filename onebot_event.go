@@ -9,6 +9,7 @@ func (ob *OneBot) Push(event AnyEvent) bool {
 		ob.Logger.Warnf("事件字段值无效")
 		return false
 	}
+	ob.Logger.Debugf("事件: %#v", event)
 
 	eventJSONBytes, err := json.Marshal(event)
 	if err != nil {

@@ -24,7 +24,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	// reject unsupported methods
 	if r.Method != "POST" && r.Method != "GET" {
-		comm.ob.Logger.Warnf("Action 只支持通过 POST 方式请求")
+		comm.ob.Logger.Warnf("动作请求只支持通过 POST 方式请求")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -41,13 +41,13 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	// reject unsupported content types
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
-		comm.fail(w, RetCodeInvalidRequest, "Action 请求体 MIME 类型必须是 application/json")
+		comm.fail(w, RetCodeInvalidRequest, "动作请求体 MIME 类型必须是 application/json")
 		return
 	}
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		comm.fail(w, RetCodeInvalidRequest, "Action 请求体读取失败: %v", err)
+		comm.fail(w, RetCodeInvalidRequest, "动作请求体读取失败: %v", err)
 		return
 	}
 

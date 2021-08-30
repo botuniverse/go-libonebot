@@ -15,23 +15,23 @@ type Request struct {
 
 func validateActionJSON(actionJSON gjson.Result) error {
 	if !actionJSON.Get("action").Exists() {
-		return errors.New("Action 请求体缺少 `action` 字段")
+		return errors.New("动作请求缺少 `action` 字段")
 	}
 	if actionJSON.Get("action").String() == "" {
-		return errors.New("Action 请求体的 `action` 字段为空")
+		return errors.New("动作请求的 `action` 字段为空")
 	}
 	if !actionJSON.Get("params").Exists() {
-		return errors.New("Action 请求体缺少 `params` 字段")
+		return errors.New("动作请求缺少 `params` 字段")
 	}
 	if !actionJSON.Get("params").IsObject() {
-		return errors.New("Action 请求体的 `params` 字段不是一个 JSON 对象")
+		return errors.New("动作请求的 `params` 字段不是一个 JSON 对象")
 	}
 	return nil
 }
 
 func parseActionRequest(prefix string, actionBody string) (Request, error) {
 	if !gjson.Valid(actionBody) {
-		return Request{}, errors.New("Action 请求体不是合法的 JSON")
+		return Request{}, errors.New("动作请求体不是合法的 JSON")
 	}
 
 	actionJSON := gjson.Parse(actionBody)

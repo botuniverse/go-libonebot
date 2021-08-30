@@ -27,7 +27,7 @@ func (mux *ActionMux) HandleAction(w ResponseWriter, r *Request) {
 
 	handler := (*handlers)[r.Action.Name]
 	if handler == nil {
-		err := fmt.Errorf("Action `%v` 不存在", r.Action)
+		err := fmt.Errorf("动作 `%v` 不存在", r.Action)
 		w.WriteFailed(RetCodeActionNotFound, err)
 		return
 	}
