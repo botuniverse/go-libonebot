@@ -25,6 +25,16 @@ func (m *Message) Reduce() {
 	}
 }
 
+func (m *Message) ExtractText() (text string) {
+	for _, s := range *m {
+		if s.Type == SegTypeText {
+			t, _ := s.Data.GetString("text")
+			text += t
+		}
+	}
+	return
+}
+
 func MessageFromJSON(j gjson.Result) (Message, error) {
 	if j.Type == gjson.String {
 		return Message{TextSegment(j.Str)}, nil

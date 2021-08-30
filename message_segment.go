@@ -15,6 +15,11 @@ func (s Segment) String() string {
 	return "onebot.Segment" + bytesToString(j)
 }
 
+const (
+	SegTypeText    = "text"
+	SegTypeMention = "mention"
+)
+
 // UnmarshalJSON implements json.Unmarshaler for `Segment` with validation.
 func (s *Segment) UnmarshalJSON(b []byte) error {
 	tmp := struct {
@@ -39,8 +44,8 @@ func (s *Segment) UnmarshalJSON(b []byte) error {
 
 func (s *Segment) TryMerge(next Segment) bool {
 	switch s.Type {
-	case "text":
-		if next.Type == "text" {
+	case SegTypeText:
+		if next.Type == SegTypeText {
 			text1, err1 := s.Data.GetString("text")
 			text2, err2 := next.Data.GetString("text")
 			if err1 != nil && err2 == nil {
@@ -66,13 +71,13 @@ func CustomSegment(type_ string, data map[string]interface{}) Segment {
 }
 
 func TextSegment(text string) Segment {
-	return CustomSegment("text", map[string]interface{}{
+	return CustomSegment(SegTypeText, map[string]interface{}{
 		"text": text,
 	})
 }
 
 func MentionSegment(userID string) Segment {
-	return CustomSegment("mention", map[string]interface{}{
+	return CustomSegment(SegTypeMention, map[string]interface{}{
 		"user_id": userID,
 	})
 }
