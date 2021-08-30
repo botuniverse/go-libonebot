@@ -1,26 +1,28 @@
 package libonebot
 
-type coreAction struct{ string }
+type CoreAction struct {
+	name string
+}
 
 var (
 	// Meta Info
-	ActionGetStatus  = coreAction{"get_status"}
-	ActionGetVersion = coreAction{"get_version"}
+	ActionGetStatus  = CoreAction{"get_status"}
+	ActionGetVersion = CoreAction{"get_version"}
 
 	// Message
-	ActionSendMessage   = coreAction{"send_message"}
-	ActionDeleteMessage = coreAction{"delete_message"}
+	ActionSendMessage   = CoreAction{"send_message"}
+	ActionDeleteMessage = CoreAction{"delete_message"}
 
 	// User
-	ActionGetSelfInfo   = coreAction{"get_self_info"}
-	ActionGetUserInfo   = coreAction{"get_user_info"}
-	ActionGetFriendList = coreAction{"get_friend_list"}
+	ActionGetSelfInfo   = CoreAction{"get_self_info"}
+	ActionGetUserInfo   = CoreAction{"get_user_info"}
+	ActionGetFriendList = CoreAction{"get_friend_list"}
 
 	// Group
-	ActionGetGroupInfo       = coreAction{"get_group_info"}
-	ActionGetGroupList       = coreAction{"get_group_list"}
-	ActionGetGroupMemberInfo = coreAction{"get_group_member_info"}
-	ActionGetGroupMemberList = coreAction{"get_group_member_list"}
+	ActionGetGroupInfo       = CoreAction{"get_group_info"}
+	ActionGetGroupList       = CoreAction{"get_group_list"}
+	ActionGetGroupMemberInfo = CoreAction{"get_group_member_info"}
+	ActionGetGroupMemberList = CoreAction{"get_group_member_list"}
 )
 
 type Action struct {

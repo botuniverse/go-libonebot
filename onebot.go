@@ -22,6 +22,12 @@ type OneBot struct {
 }
 
 func NewOneBot(platform string, config *Config) *OneBot {
+	if platform == "" {
+		panic("必须提供 OneBot 平台名称")
+	}
+	if config == nil {
+		panic("必须提供 OneBot 配置")
+	}
 	return &OneBot{
 		Platform: platform,
 		Config:   config,
@@ -38,14 +44,6 @@ func NewOneBot(platform string, config *Config) *OneBot {
 }
 
 func (ob *OneBot) Run() {
-	if ob.Platform == "" {
-		ob.Logger.Errorf("OneBot 无法启动, 没有提供 OneBot 平台名称")
-		return
-	}
-	if ob.Config == nil {
-		ob.Logger.Errorf("OneBot 无法启动, 没有提供 OneBot 配置")
-		return
-	}
 	ob.startCommMethods()
 	ob.Logger.Infof("OneBot 已启动")
 	ob.wg.Add(1)

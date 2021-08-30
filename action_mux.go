@@ -35,12 +35,15 @@ func (mux *ActionMux) HandleAction(w ResponseWriter, r *Request) {
 	handler.HandleAction(w, r)
 }
 
-func (mux *ActionMux) HandleFunc(action coreAction, handler func(ResponseWriter, *Request)) {
+func (mux *ActionMux) HandleFunc(action CoreAction, handler func(ResponseWriter, *Request)) {
 	mux.Handle(action, HandlerFunc(handler))
 }
 
-func (mux *ActionMux) Handle(action coreAction, handler Handler) {
-	mux.handlers[action.string] = handler
+func (mux *ActionMux) Handle(action CoreAction, handler Handler) {
+	if action.name == "" {
+		panic("动作名称不能为空")
+	}
+	mux.handlers[action.name] = handler
 }
 
 func (mux *ActionMux) HandleFuncExtended(action string, handler func(ResponseWriter, *Request)) {

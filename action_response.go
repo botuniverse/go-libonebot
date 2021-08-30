@@ -18,14 +18,19 @@ var (
 const (
 	RetCodeOK = 0
 
+	// Action request error
 	RetCodeInvalidRequest = 11001
 	RetCodeActionNotFound = 11002
 	RetCodeParamError     = 11003
 
+	// Action execution error
 	RetCodeDatabaseError   = 12100
 	RetCodeFilesystemError = 12200
 	RetCodePlatformError   = 12300
 	RetCodeLogicError      = 12400
+
+	// Action handler error
+	RetCodeBadActionHandler = 13001
 )
 
 type Response struct {

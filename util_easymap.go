@@ -13,11 +13,17 @@ type easyMap struct {
 }
 
 func newEasyMapFromMap(m map[string]interface{}) *easyMap {
-	j, _ := json.Marshal(m)
+	j, err := json.Marshal(m)
+	if m == nil || err != nil {
+		panic("must be serializable to a json object")
+	}
 	return &easyMap{gjson.Parse(bytesToString(j))}
 }
 
 func newEasyMapFromJSON(j gjson.Result) *easyMap {
+	if !j.IsObject() {
+		panic("must be a json object")
+	}
 	return &easyMap{j}
 }
 
