@@ -14,8 +14,7 @@ type OneBot struct {
 	eventListenChans     []chan marshaledEvent
 	eventListenChansLock sync.RWMutex
 
-	handlers         map[string]Handler
-	extendedHandlers map[string]Handler
+	actionHandler Handler
 
 	commClosers     []commCloser
 	commClosersLock sync.Mutex
@@ -31,8 +30,7 @@ func NewOneBot(platform string, config *Config) *OneBot {
 		eventListenChans:     make([]chan marshaledEvent, 0),
 		eventListenChansLock: sync.RWMutex{},
 
-		handlers:         make(map[string]Handler),
-		extendedHandlers: make(map[string]Handler),
+		actionHandler: nil,
 
 		commClosers: make([]commCloser, 0),
 		wg:          sync.WaitGroup{},
