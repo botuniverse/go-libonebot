@@ -9,8 +9,11 @@ type ParamGetter struct {
 	w      ResponseWriter
 }
 
-func NewParamGetter(params *easyMap, w ResponseWriter) *ParamGetter {
-	return &ParamGetter{params, w}
+func NewParamGetter(w ResponseWriter, r *Request) *ParamGetter {
+	return &ParamGetter{
+		params: r.Params,
+		w:      w,
+	}
 }
 
 func errorParam(err error) error {
