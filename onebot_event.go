@@ -16,6 +16,7 @@ func (ob *OneBot) Push(event AnyEvent) bool {
 		return false
 	}
 
+	ob.Logger.Infof("事件 `%v` 开始推送", event.Name())
 	ob.eventListenChansLock.RLock() // use read lock to allow emitting events concurrently
 	defer ob.eventListenChansLock.RUnlock()
 	for _, ch := range ob.eventListenChans {

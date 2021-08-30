@@ -38,7 +38,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		// keep pushing events throught the connection
 		for event := range eventChan {
-			comm.ob.Logger.Debugf("通过 WebSocket (%v) 推送事件, %v", comm.addr, event.name)
+			comm.ob.Logger.Debugf("通过 WebSocket (%v) 推送事件 `%v`", comm.addr, event.name)
 			connWriteLock.Lock()
 			conn.WriteMessage(websocket.TextMessage, event.bytes) // TODO: handle err
 			connWriteLock.Unlock()

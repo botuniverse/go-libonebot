@@ -38,7 +38,7 @@ func commStartWSReverse(c ConfigCommWSReverse, ob *OneBot) commCloser {
 		defer wg.Done()
 		// keep pushing events throught the connection
 		for event := range eventChan {
-			ob.Logger.Debugf("通过 WebSocket Reverse (%v) 推送事件, %v", c.URL, event.name)
+			ob.Logger.Debugf("通过 WebSocket Reverse (%v) 推送事件 `%v`", c.URL, event.name)
 			connWriteLock.Lock()
 			conn.WriteMessage(websocket.TextMessage, event.bytes) // TODO: handle err
 			connWriteLock.Unlock()
