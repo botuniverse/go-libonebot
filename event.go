@@ -2,7 +2,6 @@ package libonebot
 
 import (
 	"encoding/json"
-	"sync"
 	"time"
 )
 
@@ -20,7 +19,7 @@ var (
 )
 
 type Event struct {
-	lock       sync.RWMutex
+	// lock       sync.RWMutex
 	Platform   string    `json:"platform"`
 	Time       int64     `json:"time"`
 	SelfID     string    `json:"self_id"`
@@ -34,15 +33,14 @@ type AnyEvent interface {
 }
 
 func (e *Event) Name() string {
-	e.lock.RLock()
-	defer e.lock.RUnlock()
+	// e.lock.RLock()
+	// defer e.lock.RUnlock()
 	return e.Type.string + "." + e.DetailType
 }
 
 func (e *Event) tryFixUp(platform string) bool {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-
+	// e.lock.Lock()
+	// defer e.lock.Unlock()
 	if e.SelfID == "" || e.Type.string == "" || e.DetailType == "" {
 		return false
 	}
