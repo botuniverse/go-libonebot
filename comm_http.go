@@ -56,7 +56,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	request, err := comm.ob.parseAction(bodyBytes, false)
 	if err != nil {
-		comm.fail(w, RetCodeInvalidRequest, "动作请求体解析失败, 错误: %v", err)
+		comm.fail(w, RetCodeInvalidRequest, "动作请求解析失败, 错误: %v", err)
 		return
 	}
 	var response Response
@@ -73,6 +73,7 @@ func (comm *httpComm) handleGetLatestEvents(r *Request) (resp Response) {
 	resp.Echo = r.Echo
 	w := ResponseWriter{resp: &resp}
 	events := make([]AnyEvent, 0)
+	// TODO: use condvar to wait until there are events
 	comm.latestEventsLock.Lock()
 	for _, event := range comm.latestEvents {
 		events = append(events, event.raw)
