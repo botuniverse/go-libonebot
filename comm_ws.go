@@ -47,7 +47,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		// this is the only one place we read from the connection, no need to lock
-		_, messageBytes, err := conn.ReadMessage()
+		messageType, messageBytes, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 				comm.ob.Logger.Infof("WebSocket (%v) 连接断开", comm.addr)
@@ -57,7 +57,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		response := comm.ob.handleAction(bytesToString(messageBytes))
+		response := comm.ob.parseAndHandleAction(messageBytes, messageType == websocket.BinaryMessage)
 		connWriteLock.Lock()
 		conn.WriteJSON(response) // TODO: handle err
 		connWriteLock.Unlock()

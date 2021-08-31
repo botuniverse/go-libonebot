@@ -12,21 +12,10 @@ func (ob *OneBot) Handle(handler Handler) {
 	ob.actionHandler = handler
 }
 
-func (ob *OneBot) handleAction(actionBody string) (resp Response) {
-	w := ResponseWriter{resp: &resp}
-
-	// try parse the request from the JSON string
-	r, err := parseActionRequest(ob.Platform, actionBody)
-	if err != nil {
-		err := fmt.Errorf("动作请求解析失败, 错误: %v", err)
-		ob.Logger.Warn(err)
-		w.WriteFailed(RetCodeInvalidRequest, err)
-		return
-	}
-	ob.Logger.Debugf("动作请求: %#v", r)
-
-	// once we got the `echo` field, set the `echo` field in the response
+func (ob *OneBot) handleAction(r *Request) (resp Response) {
+	ob.Logger.Debugf("动作请求: %+v", r)
 	resp.Echo = r.Echo
+	w := ResponseWriter{resp: &resp}
 
 	if ob.actionHandler == nil {
 		err := fmt.Errorf("动作请求处理器未设置")
@@ -36,7 +25,7 @@ func (ob *OneBot) handleAction(actionBody string) (resp Response) {
 	}
 
 	ob.Logger.Debugf("动作请求 `%v` 开始处理", r.Action)
-	ob.actionHandler.HandleAction(w, &r)
+	ob.actionHandler.HandleAction(w, r)
 	if resp.Status.string == "" {
 		err := fmt.Errorf("动作请求处理器没有正确设置响应状态")
 		ob.Logger.Warn(err)
@@ -49,4 +38,21 @@ func (ob *OneBot) handleAction(actionBody string) (resp Response) {
 		ob.Logger.Infof("动作请求 `%v` 处理成功", r.Action)
 	}
 	return
+}
+
+func (ob *OneBot) parseAction(actionBytes []byte, isBinary bool) (Request, error) {
+	if isBinary {
+		return parseBinaryActionRequest(ob.Platform, actionBytes)
+	}
+	return parseTextActionRequest(ob.Platform, actionBytes)
+}
+
+func (ob *OneBot) parseAndHandleAction(actionBytes []byte, isBinary bool) Response {
+	request, err := ob.parseAction(actionBytes, isBinary)
+	if err != nil {
+		err := fmt.Errorf("动作请求解析失败, 错误: %v", err)
+		ob.Logger.Warn(err)
+		return failedResponse(RetCodeInvalidRequest, err)
+	}
+	return ob.handleAction(&request)
 }

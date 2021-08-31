@@ -50,7 +50,7 @@ func commStartWSReverse(c ConfigCommWSReverse, ob *OneBot) commCloser {
 		defer wg.Done()
 		for {
 			// this is the only one place we read from the connection, no need to lock
-			_, messageBytes, err := conn.ReadMessage()
+			messageType, messageBytes, err := conn.ReadMessage()
 			if err != nil {
 				// TODO: reconnect
 				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
@@ -61,7 +61,7 @@ func commStartWSReverse(c ConfigCommWSReverse, ob *OneBot) commCloser {
 				break
 			}
 
-			response := ob.handleAction(bytesToString(messageBytes))
+			response := ob.parseAndHandleAction(messageBytes, messageType == websocket.BinaryMessage)
 			connWriteLock.Lock()
 			conn.WriteJSON(response) // TODO: handle err
 			connWriteLock.Unlock()

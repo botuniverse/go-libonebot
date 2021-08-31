@@ -29,12 +29,12 @@ func validateActionJSON(actionJSON gjson.Result) error {
 	return nil
 }
 
-func parseActionRequest(prefix string, actionBody string) (Request, error) {
-	if !gjson.Valid(actionBody) {
+func parseTextActionRequest(prefix string, actionBytes []byte) (Request, error) {
+	if !gjson.ValidBytes(actionBytes) {
 		return Request{}, errors.New("动作请求体不是合法的 JSON")
 	}
 
-	actionJSON := gjson.Parse(actionBody)
+	actionJSON := gjson.Parse(bytesToString(actionBytes))
 	err := validateActionJSON(actionJSON)
 	if err != nil {
 		return Request{}, err
@@ -65,4 +65,8 @@ func parseActionRequest(prefix string, actionBody string) (Request, error) {
 		Echo:   actionJSON.Get("echo").Value(),
 	}
 	return r, nil
+}
+
+func parseBinaryActionRequest(prefix string, actionBytes []byte) (Request, error) {
+	panic("") // TODO: msgpack
 }

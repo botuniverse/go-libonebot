@@ -51,7 +51,12 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := comm.ob.handleAction(bytesToString(bodyBytes))
+	request, err := comm.ob.parseAction(bodyBytes, false)
+	if err != nil {
+		comm.fail(w, RetCodeInvalidRequest, "动作请求体解析失败, 错误: %v", err)
+		return
+	}
+	response := comm.ob.handleAction(&request)
 	json.NewEncoder(w).Encode(response)
 }
 
