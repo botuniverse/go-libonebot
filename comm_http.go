@@ -7,10 +7,13 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 type httpComm struct {
-	ob *OneBot
+	ob               *OneBot
+	latestEvents     []marshaledEvent
+	latestEventsLock sync.Mutex
 }
 
 func (comm *httpComm) handleGET(w http.ResponseWriter, r *http.Request) {
@@ -56,8 +59,28 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		comm.fail(w, RetCodeInvalidRequest, "动作请求体解析失败, 错误: %v", err)
 		return
 	}
-	response := comm.ob.handleAction(&request)
+	var response Response
+	if !request.Action.IsExtended && request.Action.Name == actionGetLatestEvents.name {
+		// special action: get_latest_events
+		response = comm.handleGetLatestEvents(&request)
+	} else {
+		response = comm.ob.handleAction(&request)
+	}
 	json.NewEncoder(w).Encode(response)
+}
+
+func (comm *httpComm) handleGetLatestEvents(r *Request) (resp Response) {
+	resp.Echo = r.Echo
+	w := ResponseWriter{resp: &resp}
+	events := make([]AnyEvent, 0)
+	comm.latestEventsLock.Lock()
+	for _, event := range comm.latestEvents {
+		events = append(events, event.raw)
+	}
+	comm.latestEvents = make([]marshaledEvent, 0)
+	comm.latestEventsLock.Unlock()
+	w.WriteData(events)
+	return
 }
 
 func (comm *httpComm) fail(w http.ResponseWriter, retcode int, errFormat string, args ...interface{}) {
@@ -70,13 +93,28 @@ func commStartHTTP(c ConfigCommHTTP, ob *OneBot) commCloser {
 	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
 	ob.Logger.Infof("正在启动 HTTP (%v)...", addr)
 
-	comm := &httpComm{ob: ob}
+	comm := &httpComm{
+		ob:           ob,
+		latestEvents: make([]marshaledEvent, 0),
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
 	server := &http.Server{
 		Addr:    addr,
 		Handler: mux,
 	}
+
+	eventChan := ob.openEventListenChan()
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for event := range eventChan {
+			comm.latestEventsLock.Lock()
+			comm.latestEvents = append(comm.latestEvents, event)
+			comm.latestEventsLock.Unlock()
+		}
+	}()
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -87,6 +125,8 @@ func commStartHTTP(c ConfigCommHTTP, ob *OneBot) commCloser {
 	}()
 
 	return func() {
+		ob.closeEventListenChan(eventChan)
+		wg.Wait()
 		if err := server.Shutdown(context.TODO() /* TODO */); err != nil {
 			ob.Logger.Errorf("HTTP (%v) 关闭失败, 错误: %v", addr, err)
 		}

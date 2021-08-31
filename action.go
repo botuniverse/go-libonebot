@@ -5,6 +5,9 @@ type CoreAction struct {
 }
 
 var (
+	// Special
+	actionGetLatestEvents = CoreAction{"get_latest_events"}
+
 	// Meta Info
 	ActionGetStatus  = CoreAction{"get_status"}
 	ActionGetVersion = CoreAction{"get_version"}

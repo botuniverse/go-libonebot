@@ -25,7 +25,7 @@ func (ob *OneBot) Push(event AnyEvent) bool {
 	ob.eventListenChansLock.RLock() // use read lock to allow emitting events concurrently
 	defer ob.eventListenChansLock.RUnlock()
 	for _, ch := range ob.eventListenChans {
-		ch <- marshaledEvent{event.Name(), eventJSONBytes}
+		ch <- marshaledEvent{event.Name(), eventJSONBytes, event}
 	}
 	return true
 }
@@ -33,6 +33,7 @@ func (ob *OneBot) Push(event AnyEvent) bool {
 type marshaledEvent struct {
 	name  string
 	bytes []byte
+	raw   AnyEvent
 }
 
 func (ob *OneBot) openEventListenChan() <-chan marshaledEvent {
