@@ -12,10 +12,10 @@ func (t eventType) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	EventTypeMessage eventType = eventType{"message"}
-	EventTypeNotice  eventType = eventType{"notice"}
-	EventTypeRequest eventType = eventType{"request"}
-	EventTypeMeta    eventType = eventType{"meta"}
+	EventTypeMessage = eventType{"message"}
+	EventTypeNotice  = eventType{"notice"}
+	EventTypeRequest = eventType{"request"}
+	EventTypeMeta    = eventType{"meta"}
 )
 
 type Event struct {
