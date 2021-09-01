@@ -47,7 +47,7 @@ func segmentFromMap(m map[string]interface{}) (Segment, error) {
 	}, nil
 }
 
-func (s *Segment) TryMerge(next Segment) bool {
+func (s *Segment) tryMerge(next Segment) bool {
 	switch s.Type {
 	case SegTypeText:
 		if next.Type == SegTypeText {

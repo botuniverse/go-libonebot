@@ -9,7 +9,7 @@ type Message []Segment
 func (m *Message) Reduce() {
 	for i := 0; i < len(*m)-1; i++ {
 		j := i + 1
-		for ; j < len(*m) && (*m)[i].TryMerge((*m)[j]); j++ {
+		for ; j < len(*m) && (*m)[i].tryMerge((*m)[j]); j++ {
 		}
 		if i+1 != j {
 			*m = append((*m)[:i+1], (*m)[j:]...)
