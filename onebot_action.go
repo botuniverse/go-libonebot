@@ -12,7 +12,7 @@ func (ob *OneBot) Handle(handler Handler) {
 	ob.actionHandler = handler
 }
 
-func (ob *OneBot) handleAction(r *Request) (resp Response) {
+func (ob *OneBot) handleActionRequest(r *Request) (resp Response) {
 	ob.Logger.Debugf("动作请求: %+v", r)
 	resp.Echo = r.Echo
 	w := ResponseWriter{resp: &resp}
@@ -40,19 +40,16 @@ func (ob *OneBot) handleAction(r *Request) (resp Response) {
 	return
 }
 
-func (ob *OneBot) parseAction(actionBytes []byte, isBinary bool) (Request, error) {
-	if isBinary {
-		return parseBinaryActionRequest(ob.Platform, actionBytes)
-	}
-	return parseTextActionRequest(ob.Platform, actionBytes)
+func (ob *OneBot) parseActionRequest(actionBytes []byte, isBinary bool) (Request, error) {
+	return parseActionRequest(ob.Platform, actionBytes, isBinary)
 }
 
-func (ob *OneBot) parseAndHandleAction(actionBytes []byte, isBinary bool) Response {
-	request, err := ob.parseAction(actionBytes, isBinary)
+func (ob *OneBot) parseAndHandleActionRequest(actionBytes []byte, isBinary bool) Response {
+	request, err := ob.parseActionRequest(actionBytes, isBinary)
 	if err != nil {
 		err := fmt.Errorf("动作请求解析失败, 错误: %v", err)
 		ob.Logger.Warn(err)
 		return failedResponse(RetCodeInvalidRequest, err)
 	}
-	return ob.handleAction(&request)
+	return ob.handleActionRequest(&request)
 }

@@ -5,7 +5,7 @@ import (
 )
 
 type ParamGetter struct {
-	params *easyMap
+	params easierMap
 	w      ResponseWriter
 }
 

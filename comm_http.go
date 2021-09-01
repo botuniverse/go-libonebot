@@ -55,7 +55,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request, err := comm.ob.parseAction(bodyBytes, false)
+	request, err := comm.ob.parseActionRequest(bodyBytes, false)
 	if err != nil {
 		comm.fail(w, RetCodeInvalidRequest, "动作请求解析失败, 错误: %v", err)
 		return
@@ -65,7 +65,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		// special action: get_latest_events
 		response = comm.handleGetLatestEvents(&request)
 	} else {
-		response = comm.ob.handleAction(&request)
+		response = comm.ob.handleActionRequest(&request)
 	}
 	json.NewEncoder(w).Encode(response)
 }

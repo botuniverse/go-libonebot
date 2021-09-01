@@ -57,9 +57,16 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		response := comm.ob.parseAndHandleAction(messageBytes, messageType == websocket.BinaryMessage)
+		isBinary := messageType == websocket.BinaryMessage
+		resp := comm.ob.parseAndHandleActionRequest(messageBytes, isBinary)
+		respBytes, err := resp.encode(isBinary)
+		if err != nil {
+			err := fmt.Errorf("动作响应编码失败, 错误: %v", err)
+			comm.ob.Logger.Warn(err)
+			respBytes, _ = failedResponse(RetCodeBadActionHandler, err).encode(isBinary)
+		}
 		connWriteLock.Lock()
-		conn.WriteJSON(response) // TODO: handle err
+		conn.WriteMessage(messageType, respBytes) // TODO: handle err
 		connWriteLock.Unlock()
 	}
 }

@@ -1,13 +1,20 @@
 package libonebot
 
 import (
+	"bytes"
 	"encoding/json"
+
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type actionStatus struct{ string }
 
 func (s actionStatus) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.string)
+}
+
+func (s actionStatus) MarshalMsgpack() ([]byte, error) {
+	return msgpack.Marshal(s.string)
 }
 
 var (
@@ -49,23 +56,13 @@ func failedResponse(retCode int, err error) Response {
 	}
 }
 
-type ResponseWriter struct {
-	resp *Response
-}
-
-func (w ResponseWriter) WriteOK() {
-	w.resp.Status = statusOK
-	w.resp.RetCode = RetCodeOK
-	w.resp.Message = ""
-}
-
-func (w ResponseWriter) WriteData(data interface{}) {
-	w.WriteOK()
-	w.resp.Data = data
-}
-
-func (w ResponseWriter) WriteFailed(retCode int, err error) {
-	w.resp.Status = statusFailed
-	w.resp.RetCode = retCode
-	w.resp.Message = err.Error()
+func (r Response) encode(isBinary bool) ([]byte, error) {
+	if isBinary {
+		var buf bytes.Buffer
+		enc := msgpack.NewEncoder(&buf)
+		enc.SetCustomStructTag("json")
+		err := enc.Encode(r)
+		return buf.Bytes(), err
+	}
+	return json.Marshal(r)
 }

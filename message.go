@@ -1,19 +1,10 @@
 package libonebot
 
 import (
-	"encoding/json"
 	"fmt"
-
-	"github.com/botuniverse/go-libonebot/utils"
-	"github.com/tidwall/gjson"
 )
 
 type Message []Segment
-
-func (m Message) String() string {
-	j, _ := json.Marshal(m)
-	return "onebot.Message" + utils.BytesToString(j)
-}
 
 func (m *Message) Reduce() {
 	for i := 0; i < len(*m)-1; i++ {
@@ -36,24 +27,34 @@ func (m *Message) ExtractText() (text string) {
 	return
 }
 
-func MessageFromJSON(j gjson.Result) (Message, error) {
-	if j.Type == gjson.String {
-		return Message{TextSegment(j.Str)}, nil
-	}
-
-	var msgJSONString string
-	if j.IsObject() {
-		msgJSONString = "[" + j.Raw + "]"
-	} else if j.IsArray() {
-		msgJSONString = j.Raw
-	} else {
+func messageFromInterface(interf interface{}) (Message, error) {
+	switch v := interf.(type) {
+	case string:
+		return Message{TextSegment(v)}, nil
+	case map[string]interface{}:
+		seg, err := segmentFromMap(v)
+		if err != nil {
+			return nil, err
+		}
+		return Message{seg}, nil
+	case []interface{}:
+		segs := make([]Segment, len(v))
+		for i, s := range v {
+			switch s := s.(type) {
+			case string:
+				segs[i] = TextSegment(s)
+			case map[string]interface{}:
+				seg, err := segmentFromMap(s)
+				if err != nil {
+					return nil, err
+				}
+				segs[i] = seg
+			default:
+				return nil, fmt.Errorf("消息解析失败, 不是有效的消息格式")
+			}
+		}
+		return segs, nil
+	default:
 		return nil, fmt.Errorf("消息解析失败, 不是有效的消息格式")
 	}
-
-	msg := Message{}
-	err := json.Unmarshal(utils.StringToBytes(msgJSONString), &msg)
-	if err != nil {
-		return nil, fmt.Errorf("消息解析失败, 错误: %v", err)
-	}
-	return msg, nil
 }

@@ -4,17 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/botuniverse/go-libonebot/utils"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type Segment struct {
-	Type string   `json:"type"`
-	Data *easyMap `json:"data"`
+	Type string
+	Data easierMap
 }
 
-func (s Segment) String() string {
-	j, _ := json.Marshal(s)
-	return "onebot.Segment" + utils.BytesToString(j)
+func (s Segment) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"type": s.Type,
+		"data": s.Data.Value(),
+	})
+}
+
+func (s Segment) MarshalMsgpack() ([]byte, error) {
+	return msgpack.Marshal(map[string]interface{}{
+		"type": s.Type,
+		"data": s.Data.Value(),
+	})
 }
 
 const (
@@ -22,26 +31,20 @@ const (
 	SegTypeMention = "mention"
 )
 
-// UnmarshalJSON implements json.Unmarshaler for `Segment` with validation.
-func (s *Segment) UnmarshalJSON(b []byte) error {
-	tmp := struct {
-		Type string   `json:"type"`
-		Data *easyMap `json:"data"`
-	}{}
-	err := json.Unmarshal(b, &tmp) // this will do the normal unmarshalling
+func segmentFromMap(m map[string]interface{}) (Segment, error) {
+	em := easierMapFromMap(m)
+	t, _ := em.GetString("type")
+	if t == "" {
+		return Segment{}, fmt.Errorf("消息段 `type` 字段不存在或为空")
+	}
+	data, err := em.GetMap("data")
 	if err != nil {
-		return fmt.Errorf("消息段格式错误")
+		data = easierMapFromMap(map[string]interface{}{})
 	}
-	// validate the result
-	if tmp.Type == "" {
-		return fmt.Errorf("消息段 `type` 字段不存在或为空")
-	}
-	if tmp.Data == nil {
-		return fmt.Errorf("消息段 `data` 字段不存在或为空")
-	}
-	s.Type = tmp.Type
-	s.Data = tmp.Data
-	return nil
+	return Segment{
+		Type: t,
+		Data: data,
+	}, nil
 }
 
 func (s *Segment) TryMerge(next Segment) bool {
@@ -68,7 +71,7 @@ func (s *Segment) TryMerge(next Segment) bool {
 func CustomSegment(type_ string, data map[string]interface{}) Segment {
 	return Segment{
 		Type: type_,
-		Data: newEasyMapFromMap(data),
+		Data: easierMapFromMap(data),
 	}
 }
 

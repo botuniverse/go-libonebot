@@ -2,7 +2,6 @@ package libonebot
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/botuniverse/go-libonebot/utils"
@@ -12,39 +11,31 @@ import (
 
 type Request struct {
 	Action Action
-	Params *easyMap
+	Params easierMap
 	Echo   interface{}
 }
 
-func validateActionJSON(actionJSON gjson.Result) error {
-	if !actionJSON.Get("action").Exists() {
-		return errors.New("动作请求缺少 `action` 字段")
-	}
-	if actionJSON.Get("action").String() == "" {
+func validateActionRequestMap(m easierMap) error {
+	if action, err := m.GetString("action"); err != nil {
+		return errors.New("动作请求 `action` 字段不存在或类型错误")
+	} else if action == "" {
 		return errors.New("动作请求的 `action` 字段为空")
 	}
-	if !actionJSON.Get("params").Exists() {
-		return errors.New("动作请求缺少 `params` 字段")
-	}
-	if !actionJSON.Get("params").IsObject() {
-		return errors.New("动作请求的 `params` 字段不是一个 JSON 对象")
+	if _, err := m.GetMap("params"); err != nil {
+		return errors.New("动作请求 `params` 字段不存在或类型错误")
 	}
 	return nil
 }
 
-func parseTextActionRequest(prefix string, actionBytes []byte) (Request, error) {
-	if !gjson.ValidBytes(actionBytes) {
-		return Request{}, errors.New("动作请求体不是合法的 JSON")
-	}
-
-	actionJSON := gjson.Parse(utils.BytesToString(actionBytes))
-	err := validateActionJSON(actionJSON)
+func parseActionRequestFromMap(prefix string, m map[string]interface{}) (Request, error) {
+	em := easierMapFromMap(m)
+	err := validateActionRequestMap(em)
 	if err != nil {
 		return Request{}, err
 	}
 
 	var action Action
-	fullname := actionJSON.Get("action").String()
+	fullname, _ := em.GetString("action")
 	prefix_ul := prefix + "_"
 	if strings.HasPrefix(fullname, prefix_ul) {
 		// extended action
@@ -62,21 +53,32 @@ func parseTextActionRequest(prefix string, actionBytes []byte) (Request, error) 
 		}
 	}
 
+	params, _ := em.GetMap("params")
+	echo, _ := em.Get("echo")
 	r := Request{
 		Action: action,
-		Params: newEasyMapFromJSON(actionJSON.Get("params")),
-		Echo:   actionJSON.Get("echo").Value(),
+		Params: params,
+		Echo:   echo,
 	}
 	return r, nil
 }
 
-func parseBinaryActionRequest(prefix string, actionBytes []byte) (Request, error) {
-	// TODO
-	var actionMap map[string]interface{}
-	err := msgpack.Unmarshal(actionBytes, &actionMap)
-	if err != nil {
-		return Request{}, err
+func parseActionRequest(prefix string, actionBytes []byte, isBinary bool) (Request, error) {
+	var actionRequestMap map[string]interface{}
+	if isBinary {
+		err := msgpack.Unmarshal(actionBytes, &actionRequestMap)
+		if err != nil || actionRequestMap == nil {
+			return Request{}, errors.New("动作请求不是一个 MsgPack 映射")
+		}
+	} else {
+		if !gjson.ValidBytes(actionBytes) {
+			return Request{}, errors.New("动作请求体不是合法的 JSON")
+		}
+		m, ok := gjson.Parse(utils.BytesToString(actionBytes)).Value().(map[string]interface{})
+		if !ok || m == nil {
+			return Request{}, errors.New("动作请求不是一个 JSON 对象")
+		}
+		actionRequestMap = m
 	}
-	fmt.Printf("actionMap: %#v\n", actionMap)
-	panic("")
+	return parseActionRequestFromMap(prefix, actionRequestMap)
 }
