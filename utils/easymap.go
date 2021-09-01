@@ -113,6 +113,22 @@ func (m EasyMap) GetString(key string) (string, error) {
 	}
 }
 
+func (m EasyMap) GetBytes(key string) ([]byte, error) {
+	val, err := m.Get(key)
+	if err != nil {
+		return nil, err
+	}
+	if val == nil {
+		return nil, m.errorInvalidField(key)
+	}
+	switch val := val.(type) {
+	case []byte:
+		return val, nil
+	default:
+		return nil, m.errorInvalidField(key)
+	}
+}
+
 func (m EasyMap) GetMap(key string) (EasyMap, error) {
 	val, err := m.Get(key)
 	if err != nil {
