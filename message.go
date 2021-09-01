@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/botuniverse/go-libonebot/utils"
 	"github.com/tidwall/gjson"
 )
 
@@ -11,7 +12,7 @@ type Message []Segment
 
 func (m Message) String() string {
 	j, _ := json.Marshal(m)
-	return "onebot.Message" + bytesToString(j)
+	return "onebot.Message" + utils.BytesToString(j)
 }
 
 func (m *Message) Reduce() {
@@ -50,7 +51,7 @@ func MessageFromJSON(j gjson.Result) (Message, error) {
 	}
 
 	msg := Message{}
-	err := json.Unmarshal(stringToBytes(msgJSONString), &msg)
+	err := json.Unmarshal(utils.StringToBytes(msgJSONString), &msg)
 	if err != nil {
 		return nil, fmt.Errorf("消息解析失败, 错误: %v", err)
 	}

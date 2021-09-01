@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/botuniverse/go-libonebot/utils"
 	"github.com/tidwall/gjson"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -36,7 +37,7 @@ func parseTextActionRequest(prefix string, actionBytes []byte) (Request, error) 
 		return Request{}, errors.New("动作请求体不是合法的 JSON")
 	}
 
-	actionJSON := gjson.Parse(bytesToString(actionBytes))
+	actionJSON := gjson.Parse(utils.BytesToString(actionBytes))
 	err := validateActionJSON(actionJSON)
 	if err != nil {
 		return Request{}, err

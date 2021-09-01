@@ -1,11 +1,11 @@
-package libonebot
+package utils
 
 import (
 	"reflect"
 	"unsafe"
 )
 
-func stringToBytes(s string) []byte {
+func StringToBytes(s string) []byte {
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	bh := reflect.SliceHeader{
 		Data: sh.Data,
@@ -15,6 +15,6 @@ func stringToBytes(s string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&bh))
 }
 
-func bytesToString(b []byte) string {
+func BytesToString(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }

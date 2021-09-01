@@ -3,6 +3,8 @@ package libonebot
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/botuniverse/go-libonebot/utils"
 )
 
 type Segment struct {
@@ -12,7 +14,7 @@ type Segment struct {
 
 func (s Segment) String() string {
 	j, _ := json.Marshal(s)
-	return "onebot.Segment" + bytesToString(j)
+	return "onebot.Segment" + utils.BytesToString(j)
 }
 
 const (

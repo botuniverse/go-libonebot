@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/botuniverse/go-libonebot/utils"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
@@ -17,7 +18,7 @@ func newEasyMapFromMap(m map[string]interface{}) *easyMap {
 	if m == nil || err != nil {
 		panic("must be serializable to a json object")
 	}
-	return &easyMap{gjson.Parse(bytesToString(j))}
+	return &easyMap{gjson.Parse(utils.BytesToString(j))}
 }
 
 func newEasyMapFromJSON(j gjson.Result) *easyMap {
@@ -28,11 +29,11 @@ func newEasyMapFromJSON(j gjson.Result) *easyMap {
 }
 
 func (m easyMap) MarshalJSON() ([]byte, error) {
-	return stringToBytes(m.inner.Raw), nil
+	return utils.StringToBytes(m.inner.Raw), nil
 }
 
 func (m *easyMap) UnmarshalJSON(data []byte) error {
-	s := bytesToString(data)
+	s := utils.BytesToString(data)
 	if !gjson.Valid(s) {
 		return fmt.Errorf("JSON 语法错误")
 	}
