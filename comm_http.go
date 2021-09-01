@@ -47,6 +47,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		comm.fail(w, RetCodeInvalidRequest, "动作请求体 MIME 类型必须是 application/json")
 		return
 	}
+	// TODO: Content-Type: application/msgpack
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {

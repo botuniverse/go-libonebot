@@ -2,9 +2,11 @@ package libonebot
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/tidwall/gjson"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type Request struct {
@@ -68,5 +70,12 @@ func parseTextActionRequest(prefix string, actionBytes []byte) (Request, error) 
 }
 
 func parseBinaryActionRequest(prefix string, actionBytes []byte) (Request, error) {
-	panic("") // TODO: msgpack
+	// TODO
+	var actionMap map[string]interface{}
+	err := msgpack.Unmarshal(actionBytes, &actionMap)
+	if err != nil {
+		return Request{}, err
+	}
+	fmt.Printf("actionMap: %#v\n", actionMap)
+	panic("")
 }
