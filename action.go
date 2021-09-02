@@ -13,7 +13,7 @@ var (
 	actionGetLatestEvents = CoreAction{"get_latest_events"} // 获取最新事件
 )
 
-// ActionXXX 表示 OneBot 标准定义的核心动作.
+// ActionXxx 表示 OneBot 标准定义的核心动作.
 var (
 	// OneBot 元信息相关动作
 	ActionGetStatus  = CoreAction{"get_status"}  // 获取 OneBot 运行状态

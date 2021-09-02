@@ -27,7 +27,7 @@ func (s Segment) MarshalMsgpack() ([]byte, error) {
 	})
 }
 
-// SegTypeXXX 表示 OneBot 标准定义的核心消息段类型.
+// SegTypeXxx 表示 OneBot 标准定义的核心消息段类型.
 const (
 	SegTypeText    = "text"    // 纯文本消息段
 	SegTypeMention = "mention" // 提及 (即 @) 消息段

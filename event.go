@@ -11,7 +11,7 @@ func (t eventType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(t.string)
 }
 
-// EventTypeXXX 表示 OneBot 标准定义的事件类型.
+// EventTypeXxx 表示 OneBot 标准定义的事件类型.
 var (
 	EventTypeMessage = eventType{"message"} // 消息事件
 	EventTypeNotice  = eventType{"notice"}  // 通知事件

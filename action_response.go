@@ -22,7 +22,7 @@ var (
 	statusFailed = actionStatus{"failed"}
 )
 
-// RetCodeXXX 表示动作响应返回码.
+// RetCodeXxx 表示动作响应返回码.
 const (
 	RetCodeOK = 0 // 成功
 
