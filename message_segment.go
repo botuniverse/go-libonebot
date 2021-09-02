@@ -78,6 +78,14 @@ func CustomSegment(type_ string, data map[string]interface{}) Segment {
 	}
 }
 
+// ExtendedSegment 构造一个指定类型的扩展消息段.
+func ExtendedSegment(prefix string, type_ string, data map[string]interface{}) Segment {
+	return Segment{
+		Type: prefix + "_" + type_,
+		Data: EasierMapFromMap(data),
+	}
+}
+
 // TextSegment 构造一个纯文本消息段.
 func TextSegment(text string) Segment {
 	return CustomSegment(SegTypeText, map[string]interface{}{
