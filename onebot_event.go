@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 )
 
+// Push 向与 OneBot 实例连接的接受端推送一个事件.
 func (ob *OneBot) Push(event AnyEvent) bool {
 	if event == nil {
 		ob.Logger.Warnf("事件为空")

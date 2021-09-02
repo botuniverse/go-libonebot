@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// OneBot 表示一个 OneBot 实例.
 type OneBot struct {
 	Platform string
 	Config   *Config
@@ -21,6 +22,11 @@ type OneBot struct {
 	wg              sync.WaitGroup
 }
 
+// NewOneBot 创建一个新的 OneBot 实例.
+//
+// 参数:
+//   platform: OneBot 实现平台名称, 用作动作名称等的前缀, 不能为空
+//   config: OneBot 配置, 不能为 nil
 func NewOneBot(platform string, config *Config) *OneBot {
 	if platform == "" {
 		panic("必须提供 OneBot 平台名称")
@@ -43,6 +49,9 @@ func NewOneBot(platform string, config *Config) *OneBot {
 	}
 }
 
+// Run 运行 OneBot 实例.
+//
+// 该方法会阻塞当前线程, 直到 Shutdown 被调用.
 func (ob *OneBot) Run() {
 	ob.startCommMethods()
 	ob.Logger.Infof("OneBot 已启动")
@@ -51,6 +60,7 @@ func (ob *OneBot) Run() {
 	ob.Logger.Infof("OneBot 已关闭")
 }
 
+// Shutdown 停止 OneBot 实例.
 func (ob *OneBot) Shutdown() {
 	ob.commClosersLock.Lock()
 	for _, closer := range ob.commClosers {

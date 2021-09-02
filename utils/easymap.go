@@ -5,10 +5,16 @@ import (
 	"strconv"
 )
 
+// EasyMap 封装了一个类 map[string]interface{} 的数据结构,
+// 提供了更加方便的方法来获取其中的字段值.
 type EasyMap struct {
 	inner map[string]interface{}
 }
 
+// EasyMapFromMap 从 map[string]interface{} 创建一个 EasyMap.
+//
+// 参数:
+//   m: 要封装的 map[string]interface{}, 不能为 nil
 func EasyMapFromMap(m map[string]interface{}) EasyMap {
 	if m == nil {
 		panic("must not be nil")
@@ -16,6 +22,7 @@ func EasyMapFromMap(m map[string]interface{}) EasyMap {
 	return EasyMap{m}
 }
 
+// Value 获取 EasyMap 内部数据结构的 map[string]interface{} 形式.
 func (m EasyMap) Value() map[string]interface{} {
 	return m.inner
 }
@@ -28,6 +35,7 @@ func (m EasyMap) errorInvalidField(key string) error {
 	return fmt.Errorf("`%v` 字段是无效值", key)
 }
 
+// Get 获取任意类型的字段值.
 func (m EasyMap) Get(key string) (interface{}, error) {
 	val, ok := m.inner[key]
 	if !ok {
@@ -36,6 +44,7 @@ func (m EasyMap) Get(key string) (interface{}, error) {
 	return val, nil
 }
 
+// GetBool 获取布尔类型的字段值, 如果字段是字符串, 则会尝试转换.
 func (m EasyMap) GetBool(key string) (bool, error) {
 	val, err := m.Get(key)
 	if err != nil {
@@ -51,6 +60,7 @@ func (m EasyMap) GetBool(key string) (bool, error) {
 	}
 }
 
+// GetInt64 获取整数类型的字段值, 如果字段是字符串, 则会尝试转换.
 func (m EasyMap) GetInt64(key string) (int64, error) {
 	val, err := m.Get(key)
 	if err != nil {
@@ -74,6 +84,7 @@ func (m EasyMap) GetInt64(key string) (int64, error) {
 	}
 }
 
+// GetFloat64 获取浮点数类型的字段值, 如果字段是字符串, 则会尝试转换.
 func (m EasyMap) GetFloat64(key string) (float64, error) {
 	val, err := m.Get(key)
 	if err != nil {
@@ -97,6 +108,7 @@ func (m EasyMap) GetFloat64(key string) (float64, error) {
 	}
 }
 
+// GetString 获取字符串类型的字段值.
 func (m EasyMap) GetString(key string) (string, error) {
 	val, err := m.Get(key)
 	if err != nil {
@@ -113,6 +125,7 @@ func (m EasyMap) GetString(key string) (string, error) {
 	}
 }
 
+// GetBytes 获取字节数组类型的字段值.
 func (m EasyMap) GetBytes(key string) ([]byte, error) {
 	val, err := m.Get(key)
 	if err != nil {
@@ -129,6 +142,7 @@ func (m EasyMap) GetBytes(key string) ([]byte, error) {
 	}
 }
 
+// GetMap 获取 map[string]interface{} 类型的字段值, 并封装为 EasyMap.
 func (m EasyMap) GetMap(key string) (EasyMap, error) {
 	val, err := m.Get(key)
 	if err != nil {
@@ -145,6 +159,7 @@ func (m EasyMap) GetMap(key string) (EasyMap, error) {
 	}
 }
 
+// GetArray 获取 []interface{} 类型的字段值.
 func (m EasyMap) GetArray(key string) ([]interface{}, error) {
 	val, err := m.Get(key)
 	if err != nil {
@@ -161,6 +176,7 @@ func (m EasyMap) GetArray(key string) ([]interface{}, error) {
 	}
 }
 
+// GetMapArray 获取 []map[string]interface{} 类型的字段值, 并封装为 []EasyMap.
 func (m EasyMap) GetMapArray(key string) ([]EasyMap, error) {
 	val, err := m.Get(key)
 	if err != nil {
@@ -181,6 +197,7 @@ func (m EasyMap) GetMapArray(key string) ([]EasyMap, error) {
 	}
 }
 
+// Set 设置任意类型的字段值.
 func (m EasyMap) Set(key string, value interface{}) {
 	m.inner[key] = value
 }

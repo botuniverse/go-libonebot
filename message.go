@@ -4,8 +4,10 @@ import (
 	"fmt"
 )
 
+// Message 表示一条消息.
 type Message []Segment
 
+// Reduce 合并消息中连续的可合并消息段 (如连续的纯文本消息段).
 func (m *Message) Reduce() {
 	for i := 0; i < len(*m)-1; i++ {
 		j := i + 1
@@ -17,6 +19,7 @@ func (m *Message) Reduce() {
 	}
 }
 
+// ExtractText 提取消息中的纯文本消息段, 并合并为字符串.
 func (m *Message) ExtractText() (text string) {
 	for _, s := range *m {
 		if s.Type == SegTypeText {

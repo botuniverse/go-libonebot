@@ -9,10 +9,11 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+// Request 表示一个动作请求.
 type Request struct {
-	Action Action
-	Params EasierMap
-	Echo   interface{}
+	Action Action      // 动作名称
+	Params EasierMap   // 动作参数
+	Echo   interface{} // 动作请求的 echo 字段
 }
 
 func validateActionRequestMap(m EasierMap) error {
