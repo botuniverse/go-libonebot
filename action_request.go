@@ -11,11 +11,11 @@ import (
 
 type Request struct {
 	Action Action
-	Params easierMap
+	Params EasierMap
 	Echo   interface{}
 }
 
-func validateActionRequestMap(m easierMap) error {
+func validateActionRequestMap(m EasierMap) error {
 	if action, err := m.GetString("action"); err != nil {
 		return errors.New("动作请求 `action` 字段不存在或类型错误")
 	} else if action == "" {
@@ -28,7 +28,7 @@ func validateActionRequestMap(m easierMap) error {
 }
 
 func parseActionRequestFromMap(prefix string, m map[string]interface{}) (Request, error) {
-	em := easierMapFromMap(m)
+	em := EasierMapFromMap(m)
 	err := validateActionRequestMap(em)
 	if err != nil {
 		return Request{}, err

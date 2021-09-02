@@ -4,41 +4,41 @@ import (
 	"github.com/botuniverse/go-libonebot/utils"
 )
 
-type easierMap struct {
+type EasierMap struct {
 	utils.EasyMap
 }
 
-func easierMapFromMap(m map[string]interface{}) easierMap {
-	return easierMapFromEasyMap(utils.EasyMapFromMap(m))
+func EasierMapFromMap(m map[string]interface{}) EasierMap {
+	return EasierMapFromEasyMap(utils.EasyMapFromMap(m))
 }
 
-func easierMapFromEasyMap(m utils.EasyMap) easierMap {
-	return easierMap{
+func EasierMapFromEasyMap(m utils.EasyMap) EasierMap {
+	return EasierMap{
 		EasyMap: m,
 	}
 }
 
-func (m easierMap) GetMap(key string) (easierMap, error) {
+func (m EasierMap) GetMap(key string) (EasierMap, error) {
 	val, err := m.EasyMap.GetMap(key)
 	if err != nil {
-		return easierMap{}, err
+		return EasierMap{}, err
 	}
-	return easierMapFromEasyMap(val), nil
+	return EasierMapFromEasyMap(val), nil
 }
 
-func (m easierMap) GetMapArray(key string) ([]easierMap, error) {
+func (m EasierMap) GetMapArray(key string) ([]EasierMap, error) {
 	val, err := m.EasyMap.GetMapArray(key)
 	if err != nil {
 		return nil, err
 	}
-	arr := make([]easierMap, len(val))
+	arr := make([]EasierMap, len(val))
 	for i, v := range val {
-		arr[i] = easierMapFromEasyMap(v)
+		arr[i] = EasierMapFromEasyMap(v)
 	}
 	return arr, nil
 }
 
-func (m easierMap) GetMessage(key string) (Message, error) {
+func (m EasierMap) GetMessage(key string) (Message, error) {
 	val, err := m.Get(key)
 	if err != nil {
 		return nil, err

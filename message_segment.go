@@ -9,7 +9,7 @@ import (
 
 type Segment struct {
 	Type string
-	Data easierMap
+	Data EasierMap
 }
 
 func (s Segment) MarshalJSON() ([]byte, error) {
@@ -32,14 +32,14 @@ const (
 )
 
 func segmentFromMap(m map[string]interface{}) (Segment, error) {
-	em := easierMapFromMap(m)
+	em := EasierMapFromMap(m)
 	t, _ := em.GetString("type")
 	if t == "" {
 		return Segment{}, fmt.Errorf("消息段 `type` 字段不存在或为空")
 	}
 	data, err := em.GetMap("data")
 	if err != nil {
-		data = easierMapFromMap(map[string]interface{}{})
+		data = EasierMapFromMap(map[string]interface{}{})
 	}
 	return Segment{
 		Type: t,
@@ -71,7 +71,7 @@ func (s *Segment) tryMerge(next Segment) bool {
 func CustomSegment(type_ string, data map[string]interface{}) Segment {
 	return Segment{
 		Type: type_,
-		Data: easierMapFromMap(data),
+		Data: EasierMapFromMap(data),
 	}
 }
 
