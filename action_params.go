@@ -1,6 +1,7 @@
 package libonebot
 
 import (
+	"encoding/base64"
 	"fmt"
 )
 
@@ -24,40 +25,69 @@ func errorParam(err error) error {
 }
 
 // GetBool 获取一个布尔类型参数.
-func (getter *ParamGetter) GetBool(key string) (bool, bool) {
-	val, err := getter.params.GetBool(key)
+func (p *ParamGetter) GetBool(key string) (bool, bool) {
+	val, err := p.params.GetBool(key)
 	if err != nil {
-		getter.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeParamError, errorParam(err))
 		return val, false
 	}
 	return val, true
 }
 
 // GetInt64 获取一个整数类型参数.
-func (getter *ParamGetter) GetInt64(key string) (int64, bool) {
-	val, err := getter.params.GetInt64(key)
+func (p *ParamGetter) GetInt64(key string) (int64, bool) {
+	val, err := p.params.GetInt64(key)
 	if err != nil {
-		getter.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		return val, false
+	}
+	return val, true
+}
+
+// GetFloat64 获取一个浮点数类型参数.
+func (p *ParamGetter) GetFloat64(key string) (float64, bool) {
+	val, err := p.params.GetFloat64(key)
+	if err != nil {
+		p.w.WriteFailed(RetCodeParamError, errorParam(err))
 		return val, false
 	}
 	return val, true
 }
 
 // GetString 获取一个字符串类型参数.
-func (getter *ParamGetter) GetString(key string) (string, bool) {
-	val, err := getter.params.GetString(key)
+func (p *ParamGetter) GetString(key string) (string, bool) {
+	val, err := p.params.GetString(key)
 	if err != nil {
-		getter.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeParamError, errorParam(err))
 		return val, false
 	}
 	return val, true
 }
 
-// GetMessage 获取一个消息类型参数.
-func (getter *ParamGetter) GetMessage(key string) (Message, bool) {
-	val, err := getter.params.GetMessage(key)
+// GetBytesOrBase64 获取一个字节数组类型参数.
+func (p *ParamGetter) GetBytesOrBase64(key string) ([]byte, bool) {
+	b, err := p.params.GetBytes(key)
+	if err == nil {
+		return b, true
+	}
+	s, err := p.params.GetString(key)
 	if err != nil {
-		getter.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		return nil, false
+	}
+	b, err = base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		return nil, false
+	}
+	return b, true
+}
+
+// GetMessage 获取一个消息类型参数.
+func (p *ParamGetter) GetMessage(key string) (Message, bool) {
+	val, err := p.params.GetMessage(key)
+	if err != nil {
+		p.w.WriteFailed(RetCodeParamError, errorParam(err))
 		return val, false
 	}
 	return val, true
