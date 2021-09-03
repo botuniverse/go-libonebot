@@ -58,9 +58,20 @@ func (e *Event) tryFixUp(platform string) bool {
 // MessageEvent 表示一个消息事件.
 type MessageEvent struct {
 	Event
-	UserID  string  `json:"user_id"`            // 用户 ID
-	GroupID string  `json:"group_id,omitempty"` // 群 ID
-	Message Message `json:"message"`            // 消息内容
+	Message Message `json:"message"` // 消息内容
+}
+
+// PrivateMessageEvent 表示一个私聊消息事件.
+type PrivateMessageEvent struct {
+	MessageEvent
+	UserID string `json:"user_id"` // 用户 ID
+}
+
+// GroupMessageEvent 表示一个群聊消息事件.
+type GroupMessageEvent struct {
+	MessageEvent
+	UserID  string `json:"user_id"`  // 用户 ID
+	GroupID string `json:"group_id"` // 群 ID
 }
 
 // NoticeEvent 表示一个通知事件.
