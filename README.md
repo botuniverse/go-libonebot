@@ -152,6 +152,7 @@ func main() {
 			"message_id": fmt.Sprint(atomic.AddUint64(&ob.lastMessageID, 1)),
 		})
 	})
+	// 注册 repl_test 扩展动作处理函数
 	mux.HandleFuncExtended("test", func(w libob.ResponseWriter, r *libob.Request) {
 		// 该扩展动作通过 repl_test 动作名来调用
 		w.WriteData("It works!") // 返回一个字符串
@@ -171,14 +172,16 @@ func main() {
 			break
 		}
 		// 构造 OneBot 私聊消息事件并通过 OneBot 对象推送到机器人业务端
-		go ob.Push(&libob.MessageEvent{
-			Event: libob.Event{
-				SelfID:     ob.config.SelfID,
-				Type:       libob.EventTypeMessage,
-				DetailType: "private",
+		go ob.Push(&libob.PrivateMessageEvent{
+			MessageEvent: libob.MessageEvent{
+				Event: libob.Event{
+					SelfID:     ob.config.SelfID,
+					Type:       libob.EventTypeMessage,
+					DetailType: "private",
+				},
+				Message: libob.Message{libob.TextSegment(text)},
 			},
-			UserID:  ob.config.UserID,
-			Message: libob.Message{libob.TextSegment(text)},
+			UserID: ob.config.UserID,
 		})
 	}
 }
