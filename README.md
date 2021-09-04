@@ -188,3 +188,8 @@ func main() {
 ```
 
 关于上面示例中所涉及的类型、函数的更多细节，请参考 [Godoc 文档](https://pkg.go.dev/github.com/botuniverse/go-libonebot)。
+
+## 致谢
+
+- 感谢 @Mrs4s 的 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 让我有了用 Go 实现 LibOneBot 的念头
+- 感谢 @topjohncian 和 @wdvxdr1123 为本项目代码提供了一些改进建议
