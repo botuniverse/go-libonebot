@@ -47,12 +47,8 @@ func (ob *OneBot) handleActionRequest(r *Request) (resp Response) {
 	return
 }
 
-func (ob *OneBot) parseActionRequest(actionBytes []byte, isBinary bool) (Request, error) {
-	return parseActionRequest(ob.Platform, actionBytes, isBinary)
-}
-
 func (ob *OneBot) parseAndHandleActionRequest(actionBytes []byte, isBinary bool) Response {
-	request, err := ob.parseActionRequest(actionBytes, isBinary)
+	request, err := parseActionRequest(actionBytes, isBinary)
 	if err != nil {
 		err := fmt.Errorf("动作请求解析失败, 错误: %v", err)
 		ob.Logger.Warn(err)

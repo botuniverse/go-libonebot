@@ -2,7 +2,6 @@ package libonebot
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/botuniverse/go-libonebot/utils"
 	"github.com/tidwall/gjson"
@@ -11,7 +10,7 @@ import (
 
 // Request 表示一个动作请求.
 type Request struct {
-	Action Action      // 动作名称
+	Action string      // 动作名称
 	Params EasierMap   // 动作参数
 	Echo   interface{} // 动作请求的 echo 字段
 }
@@ -28,32 +27,14 @@ func validateActionRequestMap(m EasierMap) error {
 	return nil
 }
 
-func parseActionRequestFromMap(prefix string, m map[string]interface{}) (Request, error) {
+func parseActionRequestFromMap(m map[string]interface{}) (Request, error) {
 	em := EasierMapFromMap(m)
 	err := validateActionRequestMap(em)
 	if err != nil {
 		return Request{}, err
 	}
 
-	var action Action
-	fullname, _ := em.GetString("action")
-	prefix_ul := prefix + "_"
-	if strings.HasPrefix(fullname, prefix_ul) {
-		// extended action
-		action = Action{
-			Prefix:     prefix,
-			Name:       strings.TrimPrefix(fullname, prefix_ul),
-			IsExtended: true,
-		}
-	} else {
-		// core action
-		action = Action{
-			Prefix:     "",
-			Name:       fullname,
-			IsExtended: false,
-		}
-	}
-
+	action, _ := em.GetString("action")
 	params, _ := em.GetMap("params")
 	echo, _ := em.Get("echo")
 	r := Request{
@@ -64,7 +45,7 @@ func parseActionRequestFromMap(prefix string, m map[string]interface{}) (Request
 	return r, nil
 }
 
-func parseActionRequest(prefix string, actionBytes []byte, isBinary bool) (Request, error) {
+func parseActionRequest(actionBytes []byte, isBinary bool) (Request, error) {
 	var actionRequestMap map[string]interface{}
 	if isBinary {
 		err := msgpack.Unmarshal(actionBytes, &actionRequestMap)
@@ -81,5 +62,5 @@ func parseActionRequest(prefix string, actionBytes []byte, isBinary bool) (Reque
 		}
 		actionRequestMap = m
 	}
-	return parseActionRequestFromMap(prefix, actionRequestMap)
+	return parseActionRequestFromMap(actionRequestMap)
 }

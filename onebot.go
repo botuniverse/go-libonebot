@@ -25,7 +25,7 @@ type OneBot struct {
 // NewOneBot 创建一个新的 OneBot 实例.
 //
 // 参数:
-//   platform: OneBot 实现平台名称, 用作动作名称等的前缀, 不能为空
+//   platform: OneBot 实现平台名称, 应和扩展动作名称、扩展参数等前缀相同, 不能为空
 //   config: OneBot 配置, 不能为 nil
 func NewOneBot(platform string, config *Config) *OneBot {
 	if platform == "" {

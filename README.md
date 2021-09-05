@@ -102,7 +102,7 @@ func main() {
 
 	// 创建 OneBot 实例
 	ob := &OneBotREPL{
-		OneBot:        libob.NewOneBot("repl" /* 聊天平台名称，用作扩展动作名等的前缀 */, &config.OneBot),
+		OneBot:        libob.NewOneBot("repl", &config.OneBot),
 		config:        &config.REPL,
 		lastMessageID: 0,
 	}
@@ -130,6 +130,7 @@ func main() {
 			"user_id": ob.config.SelfID, // 返回配置中指定的 self_id
 		})
 	})
+	// 注册 send_message 动作处理函数
 	mux.HandleFunc(libob.ActionSendMessage, func(w libob.ResponseWriter, r *libob.Request) {
 		// 创建 ParamGetter 来获取参数，也可以直接用 r.Params.GetXxx
 		p := libob.NewParamGetter(w, r)
@@ -153,8 +154,7 @@ func main() {
 		})
 	})
 	// 注册 repl_test 扩展动作处理函数
-	mux.HandleFuncExtended("test", func(w libob.ResponseWriter, r *libob.Request) {
-		// 该扩展动作通过 repl_test 动作名来调用
+	mux.HandleFunc("repl_test", func(w libob.ResponseWriter, r *libob.Request) {
 		w.WriteData("It works!") // 返回一个字符串
 	})
 

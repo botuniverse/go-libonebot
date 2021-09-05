@@ -55,13 +55,13 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request, err := comm.ob.parseActionRequest(bodyBytes, false)
+	request, err := parseActionRequest(bodyBytes, false)
 	if err != nil {
 		comm.fail(w, RetCodeInvalidRequest, "动作请求解析失败, 错误: %v", err)
 		return
 	}
 	var response Response
-	if !request.Action.IsExtended && request.Action.Name == actionGetLatestEvents.name {
+	if request.Action == actionGetLatestEvents {
 		// special action: get_latest_events
 		response = comm.handleGetLatestEvents(&request)
 	} else {
