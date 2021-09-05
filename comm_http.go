@@ -61,7 +61,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var response Response
-	if request.Action == actionGetLatestEvents {
+	if request.Action == ActionGetLatestEvents {
 		// special action: get_latest_events
 		response = comm.handleGetLatestEvents(&request)
 	} else {

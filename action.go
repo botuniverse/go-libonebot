@@ -1,12 +1,11 @@
 package libonebot
 
-// LibOneBot 处理的特殊动作名称.
-var (
-	actionGetLatestEvents = "get_latest_events" // 获取最新事件
-)
-
 // ActionXxx 表示 OneBot 标准定义的核心动作名称.
 var (
+	// LibOneBot 自动处理的特殊动作
+	ActionGetLatestEvents     = "get_latest_events"     // 获取最新事件列表
+	ActionGetSupportedActions = "get_supported_actions" // 获取支持的动作列表
+
 	// OneBot 元信息相关动作
 	ActionGetStatus  = "get_status"  // 获取 OneBot 运行状态
 	ActionGetVersion = "get_version" // 获取 OneBot 版本
