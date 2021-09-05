@@ -1,6 +1,9 @@
 package libonebot
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 // ActionMux 将动作请求按动作名称分发到不同的 Handler 对象处理.
 type ActionMux struct {
@@ -9,9 +12,22 @@ type ActionMux struct {
 
 // NewActionMux 创建一个新的 ActionMux 对象.
 func NewActionMux() *ActionMux {
-	return &ActionMux{
+	mux := &ActionMux{
 		handlers: make(map[string]Handler),
 	}
+	mux.HandleFunc(ActionGetSupportedActions, mux.handleGetSupportedActions)
+	return mux
+}
+
+func (mux *ActionMux) handleGetSupportedActions(w ResponseWriter, r *Request) {
+	actions := make([]string, 0, len(mux.handlers))
+	for action := range mux.handlers {
+		actions = append(actions, action)
+	}
+	sort.Slice(actions, func(i, j int) bool {
+		return actions[i] < actions[j]
+	})
+	w.WriteData(actions)
 }
 
 // HandleAction 为 ActionMux 实现 Handler 接口.
