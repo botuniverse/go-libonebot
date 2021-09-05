@@ -41,7 +41,7 @@ func segmentFromMap(m map[string]interface{}) (Segment, error) {
 	}
 	data, err := em.GetMap("data")
 	if err != nil {
-		data = EasierMapFromMap(map[string]interface{}{})
+		data = EasierMapFromMap(make(map[string]interface{}))
 	}
 	return Segment{
 		Type: t,
