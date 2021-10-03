@@ -1,7 +1,9 @@
 package libonebot
 
 import (
+	"context"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -9,6 +11,7 @@ import (
 // OneBot 表示一个 OneBot 实例.
 type OneBot struct {
 	Platform string
+	SelfID   string
 	Config   *Config
 	Logger   *logrus.Logger
 
@@ -19,23 +22,29 @@ type OneBot struct {
 
 	commClosers     []commCloser
 	commClosersLock sync.Mutex
-	wg              sync.WaitGroup
+
+	cancel context.CancelFunc
 }
 
 // NewOneBot 创建一个新的 OneBot 实例.
 //
 // 参数:
 //   platform: OneBot 实现平台名称, 应和扩展动作名称、扩展参数等前缀相同, 不能为空
+//   selfID: OneBot 实例对应的机器人自身 ID, 不能为空
 //   config: OneBot 配置, 不能为 nil
-func NewOneBot(platform string, config *Config) *OneBot {
+func NewOneBot(platform string, selfID string, config *Config) *OneBot {
 	if platform == "" {
 		panic("必须提供 OneBot 平台名称")
+	}
+	if selfID == "" {
+		panic("必须提供 OneBot 实例对应的机器人自身 ID")
 	}
 	if config == nil {
 		panic("必须提供 OneBot 配置")
 	}
 	return &OneBot{
 		Platform: platform,
+		SelfID:   selfID,
 		Config:   config,
 		Logger:   logrus.New(),
 
@@ -44,8 +53,10 @@ func NewOneBot(platform string, config *Config) *OneBot {
 
 		actionHandler: nil,
 
-		commClosers: make([]commCloser, 0),
-		wg:          sync.WaitGroup{},
+		commClosers:     make([]commCloser, 0),
+		commClosersLock: sync.Mutex{},
+
+		cancel: nil,
 	}
 }
 
@@ -53,10 +64,16 @@ func NewOneBot(platform string, config *Config) *OneBot {
 //
 // 该方法会阻塞当前线程, 直到 Shutdown 被调用.
 func (ob *OneBot) Run() {
+	ctx, cancel := context.WithCancel(context.Background())
+	ob.cancel = cancel
+
 	ob.startCommMethods()
+	if ob.Config.Heartbeat.Enabled {
+		go ob.heartbeat(ctx)
+	}
+
 	ob.Logger.Infof("OneBot 已启动")
-	ob.wg.Add(1)
-	ob.wg.Wait()
+	<-ctx.Done()
 	ob.Logger.Infof("OneBot 已关闭")
 }
 
@@ -68,5 +85,19 @@ func (ob *OneBot) Shutdown() {
 	}
 	ob.commClosers = make([]commCloser, 0)
 	ob.commClosersLock.Unlock()
-	ob.wg.Done()
+	ob.cancel()
+}
+
+func (ob *OneBot) heartbeat(ctx context.Context) {
+	ticker := time.NewTicker(time.Duration(ob.Config.Heartbeat.Interval) * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			event := MakeHeartbeatMetaEvent()
+			ob.Push(&event)
+		}
+	}
 }

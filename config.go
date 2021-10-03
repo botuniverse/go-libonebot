@@ -4,7 +4,7 @@ package libonebot
 type Config struct {
 	Heartbeat struct {
 		Enabled  bool   `mapstructure:"enabled"`  // 是否启用
-		Interval uint32 `mapstructure:"interval"` // 心跳间隔
+		Interval uint32 `mapstructure:"interval"` // 心跳间隔, 单位: 秒
 	} `mapstructure:"heartbeat"` // 心跳
 
 	Auth struct {
