@@ -2,6 +2,7 @@ package libonebot
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -32,7 +33,7 @@ type Event struct {
 // AnyEvent 是所有事件对象共同实现的接口.
 type AnyEvent interface {
 	Name() string
-	tryFixUp(platform string, selfID string) bool
+	tryFixUp(platform string, selfID string) error
 }
 
 // Name 返回事件名称.
@@ -42,17 +43,23 @@ func (e *Event) Name() string {
 	return e.Type.string + "." + e.DetailType
 }
 
-func (e *Event) tryFixUp(platform string, selfID string) bool {
+func (e *Event) tryFixUp(platform string, selfID string) error {
 	// e.lock.Lock()
 	// defer e.lock.Unlock()
-	if e.Time == 0 || e.Type.string == "" || e.DetailType == "" {
-		return false
+	if e.Time == 0 {
+		return errors.New("事件 `time` 字段值无效")
+	}
+	if e.Type.string == "" {
+		return errors.New("事件 `type` 字段值无效")
+	}
+	if e.DetailType == "" {
+		return errors.New("事件 `detail_type` 字段值无效")
 	}
 	e.Platform = platform // override platform field directly
 	if e.SelfID == "" {
 		e.SelfID = selfID
 	}
-	return true
+	return nil
 }
 
 // MessageEvent 表示一个消息事件.
@@ -78,7 +85,7 @@ type MetaEvent struct {
 
 func MakeMetaEvent(time time.Time, detailType string) MetaEvent {
 	if detailType == "" {
-		panic("detail_type 不可以为空")
+		panic("`detail_type` 不可以为空")
 	}
 	return MetaEvent{
 		Event: Event{

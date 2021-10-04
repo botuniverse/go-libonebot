@@ -10,8 +10,8 @@ func (ob *OneBot) Push(event AnyEvent) bool {
 		ob.Logger.Warnf("事件为空")
 		return false
 	}
-	if !event.tryFixUp(ob.Platform, ob.SelfID) {
-		ob.Logger.Warnf("事件字段值无效")
+	if err := event.tryFixUp(ob.Platform, ob.SelfID); err != nil {
+		ob.Logger.Warnf("事件无效, 错误: %v", err)
 		return false
 	}
 	ob.Logger.Debugf("事件: %#v", event)
