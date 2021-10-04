@@ -30,6 +30,14 @@ type Event struct {
 	DetailType string    `json:"detail_type"` // 事件详细类型
 }
 
+func makeEvent(time time.Time, type_ eventType, detailType string) Event {
+	return Event{
+		Time:       time.Unix(),
+		Type:       type_,
+		DetailType: detailType,
+	}
+}
+
 // AnyEvent 是所有事件对象共同实现的接口.
 type AnyEvent interface {
 	Name() string
@@ -62,10 +70,20 @@ func (e *Event) tryFixUp(platform string, selfID string) error {
 	return nil
 }
 
+// 四种事件基本类型
+
 // MessageEvent 表示一个消息事件.
 type MessageEvent struct {
 	Event
 	Message Message `json:"message"` // 消息内容
+}
+
+// MakeMessageEvent 构造一个消息事件.
+func MakeMessageEvent(time time.Time, detailType string, message Message) MessageEvent {
+	return MessageEvent{
+		Event:   makeEvent(time, EventTypeMessage, detailType),
+		Message: message,
+	}
 }
 
 // NoticeEvent 表示一个通知事件.
@@ -73,9 +91,23 @@ type NoticeEvent struct {
 	Event
 }
 
+// MakeNoticeEvent 构造一个通知事件.
+func MakeNoticeEvent(time time.Time, detailType string) MetaEvent {
+	return MetaEvent{
+		Event: makeEvent(time, EventTypeNotice, detailType),
+	}
+}
+
 // RequestEvent 表示一个请求事件.
 type RequestEvent struct {
 	Event
+}
+
+// MakeRequestEvent 构造一个请求事件.
+func MakeRequestEvent(time time.Time, detailType string) MetaEvent {
+	return MetaEvent{
+		Event: makeEvent(time, EventTypeRequest, detailType),
+	}
 }
 
 // MetaEvent 表示一个元事件.
@@ -83,15 +115,53 @@ type MetaEvent struct {
 	Event
 }
 
+// MakeMetaEvent 构造一个元事件.
 func MakeMetaEvent(time time.Time, detailType string) MetaEvent {
-	if detailType == "" {
-		panic("`detail_type` 不可以为空")
-	}
 	return MetaEvent{
-		Event: Event{
-			Time:       time.Unix(),
-			Type:       EventTypeMeta,
-			DetailType: detailType,
-		},
+		Event: makeEvent(time, EventTypeMeta, detailType),
+	}
+}
+
+// 核心消息事件
+
+// PrivateMessageEvent 表示一个私聊消息事件.
+type PrivateMessageEvent struct {
+	MessageEvent
+	UserID string `json:"user_id"` // 用户 ID
+}
+
+func MakePrivateMessageEvent(time time.Time, message Message, userID string) PrivateMessageEvent {
+	return PrivateMessageEvent{
+		MessageEvent: MakeMessageEvent(time, "private", message),
+		UserID:       userID,
+	}
+}
+
+// GroupMessageEvent 表示一个群聊消息事件.
+type GroupMessageEvent struct {
+	MessageEvent
+	UserID  string `json:"user_id"`  // 用户 ID
+	GroupID string `json:"group_id"` // 群 ID
+}
+
+func MakeGroupMessageEvent(time time.Time, message Message, userID string, groupID string) GroupMessageEvent {
+	return GroupMessageEvent{
+		MessageEvent: MakeMessageEvent(time, "group", message),
+		UserID:       userID,
+		GroupID:      groupID,
+	}
+}
+
+// 核心元事件
+
+// HeartbeatMetaEvent 表示一个心跳元事件.
+type HeartbeatMetaEvent struct {
+	MetaEvent
+}
+
+// MakeHeartbeatMetaEvent 构造一个心跳元事件.
+func MakeHeartbeatMetaEvent() HeartbeatMetaEvent {
+	return HeartbeatMetaEvent{
+		MetaEvent: MakeMetaEvent(time.Now(), "heartbeat"),
 	}
 }
