@@ -33,16 +33,14 @@ func (ob *OneBot) handleActionRequest(r *Request) (resp Response) {
 
 	ob.Logger.Debugf("动作请求 `%v` 开始处理", r.Action)
 	ob.actionHandler.HandleAction(w, r)
-	if resp.Status.string == "" {
+	if resp.Status == statusOK {
+		ob.Logger.Infof("动作请求 `%v` 处理成功", r.Action)
+	} else if resp.Status == statusFailed {
+		ob.Logger.Warnf("动作请求 `%v` 处理失败, 错误: %v", r.Action, resp.Message)
+	} else {
 		err := fmt.Errorf("动作处理器没有正确设置响应状态")
 		ob.Logger.Warn(err)
 		w.WriteFailed(RetCodeBadHandler, err)
-		return
-	}
-	if resp.Status != statusOK {
-		ob.Logger.Warnf("动作请求 `%v` 处理失败, 错误: %v", r.Action, resp.Message)
-	} else {
-		ob.Logger.Infof("动作请求 `%v` 处理成功", r.Action)
 	}
 	return
 }
