@@ -68,7 +68,7 @@ func commStartWSReverse(c ConfigCommWSReverse, ob *OneBot) commCloser {
 			if err != nil {
 				err := fmt.Errorf("动作响应编码失败, 错误: %v", err)
 				ob.Logger.Warn(err)
-				respBytes, _ = failedResponse(RetCodeBadActionHandler, err).encode(isBinary)
+				respBytes, _ = failedResponse(RetCodeBadHandler, err).encode(isBinary)
 			}
 			connWriteLock.Lock()
 			conn.WriteMessage(messageType, respBytes) // TODO: handle err

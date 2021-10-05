@@ -27,7 +27,7 @@ func (ob *OneBot) handleActionRequest(r *Request) (resp Response) {
 	if ob.actionHandler == nil {
 		err := fmt.Errorf("动作处理器未设置")
 		ob.Logger.Warn(err)
-		w.WriteFailed(RetCodeActionNotFound, err)
+		w.WriteFailed(RetCodeUnsupportedAction, err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (ob *OneBot) handleActionRequest(r *Request) (resp Response) {
 	if resp.Status.string == "" {
 		err := fmt.Errorf("动作处理器没有正确设置响应状态")
 		ob.Logger.Warn(err)
-		w.WriteFailed(RetCodeBadActionHandler, err)
+		w.WriteFailed(RetCodeBadHandler, err)
 		return
 	}
 	if resp.Status != statusOK {
@@ -52,7 +52,7 @@ func (ob *OneBot) parseAndHandleActionRequest(actionBytes []byte, isBinary bool)
 	if err != nil {
 		err := fmt.Errorf("动作请求解析失败, 错误: %v", err)
 		ob.Logger.Warn(err)
-		return failedResponse(RetCodeInvalidRequest, err)
+		return failedResponse(RetCodeBadRequest, err)
 	}
 	return ob.handleActionRequest(&request)
 }

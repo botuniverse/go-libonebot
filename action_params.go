@@ -28,7 +28,7 @@ func errorParam(err error) error {
 func (p *ParamGetter) GetBool(key string) (bool, bool) {
 	val, err := p.params.GetBool(key)
 	if err != nil {
-		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeBadParam, errorParam(err))
 		return val, false
 	}
 	return val, true
@@ -38,7 +38,7 @@ func (p *ParamGetter) GetBool(key string) (bool, bool) {
 func (p *ParamGetter) GetInt64(key string) (int64, bool) {
 	val, err := p.params.GetInt64(key)
 	if err != nil {
-		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeBadParam, errorParam(err))
 		return val, false
 	}
 	return val, true
@@ -48,7 +48,7 @@ func (p *ParamGetter) GetInt64(key string) (int64, bool) {
 func (p *ParamGetter) GetFloat64(key string) (float64, bool) {
 	val, err := p.params.GetFloat64(key)
 	if err != nil {
-		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeBadParam, errorParam(err))
 		return val, false
 	}
 	return val, true
@@ -58,7 +58,7 @@ func (p *ParamGetter) GetFloat64(key string) (float64, bool) {
 func (p *ParamGetter) GetString(key string) (string, bool) {
 	val, err := p.params.GetString(key)
 	if err != nil {
-		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeBadParam, errorParam(err))
 		return val, false
 	}
 	return val, true
@@ -72,12 +72,12 @@ func (p *ParamGetter) GetBytesOrBase64(key string) ([]byte, bool) {
 	}
 	s, err := p.params.GetString(key)
 	if err != nil {
-		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeBadParam, errorParam(err))
 		return nil, false
 	}
 	b, err = base64.StdEncoding.DecodeString(s)
 	if err != nil {
-		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeBadParam, errorParam(err))
 		return nil, false
 	}
 	return b, true
@@ -87,7 +87,7 @@ func (p *ParamGetter) GetBytesOrBase64(key string) ([]byte, bool) {
 func (p *ParamGetter) GetMessage(key string) (Message, bool) {
 	val, err := p.params.GetMessage(key)
 	if err != nil {
-		p.w.WriteFailed(RetCodeParamError, errorParam(err))
+		p.w.WriteFailed(RetCodeBadParam, errorParam(err))
 		return val, false
 	}
 	return val, true

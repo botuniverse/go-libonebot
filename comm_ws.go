@@ -63,7 +63,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			err := fmt.Errorf("动作响应编码失败, 错误: %v", err)
 			comm.ob.Logger.Warn(err)
-			respBytes, _ = failedResponse(RetCodeBadActionHandler, err).encode(isBinary)
+			respBytes, _ = failedResponse(RetCodeBadHandler, err).encode(isBinary)
 		}
 		connWriteLock.Lock()
 		conn.WriteMessage(messageType, respBytes) // TODO: handle err

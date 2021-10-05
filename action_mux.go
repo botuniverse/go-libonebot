@@ -38,7 +38,7 @@ func (mux *ActionMux) HandleAction(w ResponseWriter, r *Request) {
 	handler := mux.handlers[r.Action]
 	if handler == nil {
 		err := fmt.Errorf("动作 `%v` 不存在", r.Action)
-		w.WriteFailed(RetCodeActionNotFound, err)
+		w.WriteFailed(RetCodeUnsupportedAction, err)
 		return
 	}
 
