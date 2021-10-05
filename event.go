@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type eventType struct{ string }
@@ -23,8 +25,9 @@ var (
 // Event 包含所有类型事件的共同字段.
 type Event struct {
 	// lock       sync.RWMutex
+	UUID       string    `json:"uuid"`        // 事件唯一标识符
 	Platform   string    `json:"platform"`    // OneBot 实现平台名称, 无需在构造时传入
-	SelfID     string    `json:"self_id"`     // 机器人自身 ID
+	SelfID     string    `json:"self_id"`     // 机器人自身 ID, 无需在构造时传入
 	Time       int64     `json:"time"`        // 事件发生时间, 可选, 若不传入则使用当前时间
 	Type       eventType `json:"type"`        // 事件类型
 	DetailType string    `json:"detail_type"` // 事件详细类型
@@ -32,6 +35,7 @@ type Event struct {
 
 func makeEvent(time time.Time, type_ eventType, detailType string) Event {
 	return Event{
+		UUID:       uuid.New().String(),
 		Time:       time.Unix(),
 		Type:       type_,
 		DetailType: detailType,
