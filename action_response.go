@@ -3,23 +3,14 @@ package libonebot
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-type actionStatus struct{ string }
-
-func (s actionStatus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.string)
-}
-
-func (s actionStatus) MarshalMsgpack() ([]byte, error) {
-	return msgpack.Marshal(s.string)
-}
-
-var (
-	statusOK     = actionStatus{"ok"}
-	statusFailed = actionStatus{"failed"}
+const (
+	statusOK     = "ok"
+	statusFailed = "failed"
 )
 
 // RetCodeXxx 表示动作响应返回码.
@@ -57,11 +48,11 @@ const (
 
 // Response 表示一个动作响应.
 type Response struct {
-	Status  actionStatus `json:"status"`         // 执行状态 (成功与否)
-	RetCode int          `json:"retcode"`        // 返回码
-	Data    interface{}  `json:"data"`           // 返回数据
-	Message string       `json:"message"`        // 错误信息
-	Echo    interface{}  `json:"echo,omitempty"` // 动作请求的 echo 字段 (原样返回)
+	Status  string      `json:"status"`         // 执行状态 (成功与否)
+	RetCode int         `json:"retcode"`        // 返回码
+	Data    interface{} `json:"data"`           // 响应数据
+	Message string      `json:"message"`        // 错误信息
+	Echo    interface{} `json:"echo,omitempty"` // 动作请求的 echo 字段 (原样返回)
 }
 
 func failedResponse(retCode int, err error) Response {
@@ -73,6 +64,9 @@ func failedResponse(retCode int, err error) Response {
 }
 
 func (r Response) encode(isBinary bool) ([]byte, error) {
+	if r.Status != statusOK && r.Status != statusFailed {
+		return nil, errors.New("`status` 字段值无效")
+	}
 	if isBinary {
 		var buf bytes.Buffer
 		enc := msgpack.NewEncoder(&buf)
