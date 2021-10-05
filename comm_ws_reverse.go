@@ -2,7 +2,6 @@ package libonebot
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"sync"
 	"time"
@@ -53,13 +52,8 @@ func commRunWSReverse(c ConfigCommWSReverse, ob *OneBot, ctx context.Context, wg
 			}
 
 			isBinary := messageType == websocket.BinaryMessage
-			resp := ob.parseAndHandleActionRequest(messageBytes, isBinary)
-			respBytes, err := resp.encode(isBinary)
-			if err != nil {
-				err := fmt.Errorf("动作响应编码失败, 错误: %v", err)
-				ob.Logger.Warn(err)
-				respBytes, _ = failedResponse(RetCodeBadHandler, err).encode(isBinary)
-			}
+			resp := ob.decodeAndHandleRequest(messageBytes, isBinary)
+			respBytes, _ := ob.encodeResponse(resp, isBinary)
 			connWriteLock.Lock()
 			conn.WriteMessage(messageType, respBytes) // TODO: handle err
 			connWriteLock.Unlock()

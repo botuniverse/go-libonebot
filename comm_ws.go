@@ -58,13 +58,8 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		}
 
 		isBinary := messageType == websocket.BinaryMessage
-		resp := comm.ob.parseAndHandleActionRequest(messageBytes, isBinary)
-		respBytes, err := resp.encode(isBinary)
-		if err != nil {
-			err := fmt.Errorf("动作响应编码失败, 错误: %v", err)
-			comm.ob.Logger.Warn(err)
-			respBytes, _ = failedResponse(RetCodeBadHandler, err).encode(isBinary)
-		}
+		resp := comm.ob.decodeAndHandleRequest(messageBytes, isBinary)
+		respBytes, _ := comm.ob.encodeResponse(resp, isBinary)
 		connWriteLock.Lock()
 		conn.WriteMessage(messageType, respBytes) // TODO: handle err
 		connWriteLock.Unlock()

@@ -19,7 +19,7 @@ func (ob *OneBot) Handle(handler Handler) {
 	ob.actionHandler = handler
 }
 
-func (ob *OneBot) handleActionRequest(r *Request) (resp Response) {
+func (ob *OneBot) handleRequest(r *Request) (resp Response) {
 	ob.Logger.Debugf("动作请求: %+v", r)
 	resp.Echo = r.Echo
 	w := ResponseWriter{resp: &resp}
@@ -45,12 +45,22 @@ func (ob *OneBot) handleActionRequest(r *Request) (resp Response) {
 	return
 }
 
-func (ob *OneBot) parseAndHandleActionRequest(actionBytes []byte, isBinary bool) Response {
+func (ob *OneBot) decodeAndHandleRequest(actionBytes []byte, isBinary bool) Response {
 	request, err := decodeRequest(actionBytes, isBinary)
 	if err != nil {
 		err := fmt.Errorf("动作请求解析失败, 错误: %v", err)
 		ob.Logger.Warn(err)
 		return failedResponse(RetCodeBadRequest, err)
 	}
-	return ob.handleActionRequest(&request)
+	return ob.handleRequest(&request)
+}
+
+func (ob *OneBot) encodeResponse(resp Response, isBinary bool) ([]byte, error) {
+	respBytes, err := resp.encode(isBinary)
+	if err != nil {
+		err := fmt.Errorf("动作响应编码失败, 错误: %v", err)
+		ob.Logger.Warn(err)
+		respBytes, _ = failedResponse(RetCodeBadHandler, err).encode(isBinary)
+	}
+	return respBytes, err
 }

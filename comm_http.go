@@ -38,36 +38,45 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// once we got the action HTTP request, we respond "200 OK"
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-
-	// reject unsupported content types
-	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
-		comm.fail(w, RetCodeBadRequest, "动作请求体 MIME 类型必须是 application/json")
+	var isBinary bool
+	contentType := r.Header.Get("Content-Type")
+	if strings.HasPrefix(contentType, "application/json") {
+		isBinary = false
+	} else if strings.HasPrefix(contentType, "application/msgpack") {
+		isBinary = true
+	} else {
+		// reject unsupported content types
+		comm.ob.Logger.Warnf("动作请求体 MIME 类型不支持")
+		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
-	// TODO: Content-Type: application/msgpack
+
+	// once we got the action HTTP request, we respond "200 OK"
+	w.Header().Set("Content-Type", contentType)
+	w.WriteHeader(http.StatusOK)
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		comm.fail(w, RetCodeBadRequest, "动作请求体读取失败: %v", err)
+		comm.fail(w, RetCodeBadRequest, "动作请求体读取失败, 错误: %v", err)
 		return
 	}
 
-	request, err := decodeRequest(bodyBytes, false)
+	request, err := decodeRequest(bodyBytes, isBinary)
 	if err != nil {
 		comm.fail(w, RetCodeBadRequest, "动作请求解析失败, 错误: %v", err)
 		return
 	}
+
 	var response Response
 	if request.Action == ActionGetLatestEvents {
 		// special action: get_latest_events
 		response = comm.handleGetLatestEvents(&request)
 	} else {
-		response = comm.ob.handleActionRequest(&request)
+		response = comm.ob.handleRequest(&request)
 	}
-	json.NewEncoder(w).Encode(response)
+
+	respBytes, _ := comm.ob.encodeResponse(response, isBinary)
+	w.Write(respBytes)
 }
 
 func (comm *httpComm) handleGetLatestEvents(r *Request) (resp Response) {
