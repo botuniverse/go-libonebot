@@ -124,7 +124,7 @@ func (ob *OneBot) startHeartbeat(ctx context.Context) {
 			select {
 			case <-ticker.C:
 				ob.Logger.Debugf("扑通")
-				event := MakeHeartbeatMetaEvent()
+				event := MakeHeartbeatMetaEvent(time.Now())
 				ob.Push(&event)
 			case <-ctx.Done():
 				ob.Logger.Infof("心跳停止")
