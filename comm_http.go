@@ -55,7 +55,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request, err := parseActionRequest(bodyBytes, false)
+	request, err := decodeRequest(bodyBytes, false)
 	if err != nil {
 		comm.fail(w, RetCodeBadRequest, "动作请求解析失败, 错误: %v", err)
 		return

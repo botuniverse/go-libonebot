@@ -15,7 +15,7 @@ type Request struct {
 	Echo   interface{} // 动作请求的 echo 字段
 }
 
-func validateActionRequestMap(m EasierMap) error {
+func validateRequestMap(m EasierMap) error {
 	if action, err := m.GetString("action"); err != nil {
 		return errors.New("动作请求 `action` 字段不存在或类型错误")
 	} else if action == "" {
@@ -27,9 +27,9 @@ func validateActionRequestMap(m EasierMap) error {
 	return nil
 }
 
-func parseActionRequestFromMap(m map[string]interface{}) (Request, error) {
+func parseRequestFromMap(m map[string]interface{}) (Request, error) {
 	em := EasierMapFromMap(m)
-	err := validateActionRequestMap(em)
+	err := validateRequestMap(em)
 	if err != nil {
 		return Request{}, err
 	}
@@ -45,7 +45,7 @@ func parseActionRequestFromMap(m map[string]interface{}) (Request, error) {
 	return r, nil
 }
 
-func parseActionRequest(actionBytes []byte, isBinary bool) (Request, error) {
+func decodeRequest(actionBytes []byte, isBinary bool) (Request, error) {
 	var actionRequestMap map[string]interface{}
 	if isBinary {
 		err := msgpack.Unmarshal(actionBytes, &actionRequestMap)
@@ -62,5 +62,5 @@ func parseActionRequest(actionBytes []byte, isBinary bool) (Request, error) {
 		}
 		actionRequestMap = m
 	}
-	return parseActionRequestFromMap(actionRequestMap)
+	return parseRequestFromMap(actionRequestMap)
 }

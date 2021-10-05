@@ -1,9 +1,5 @@
 package libonebot
 
-import (
-	"encoding/json"
-)
-
 // Push 向与 OneBot 实例连接的接受端推送一个事件.
 func (ob *OneBot) Push(event AnyEvent) bool {
 	if event == nil {
@@ -16,7 +12,7 @@ func (ob *OneBot) Push(event AnyEvent) bool {
 	}
 	ob.Logger.Debugf("事件: %#v", event)
 
-	eventJSONBytes, err := json.Marshal(event)
+	eventBytes, err := event.encode()
 	if err != nil {
 		ob.Logger.Warnf("事件序列化失败, 错误: %v", err)
 		return false
@@ -26,7 +22,7 @@ func (ob *OneBot) Push(event AnyEvent) bool {
 	ob.eventListenChansLock.RLock() // use read lock to allow emitting events concurrently
 	defer ob.eventListenChansLock.RUnlock()
 	for _, ch := range ob.eventListenChans {
-		ch <- marshaledEvent{event.Name(), eventJSONBytes, event}
+		ch <- marshaledEvent{event.Name(), eventBytes, event}
 	}
 	return true
 }
