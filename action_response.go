@@ -49,6 +49,10 @@ const (
 	RetCodePlatformError      = 34000 // 聊天平台错误 (如由于聊天平台限制导致消息发送失败等)
 	RetCodeLogicError         = 35000 // 动作逻辑错误 (如尝试向不存在的用户发送消息等)
 	RetCodeIAmTired           = 36000 // 我不想干了 (一位 OneBot 实现决定罢工)
+
+	// 保留错误段
+	RetCodeReservedErrorBase1 = 40000
+	RetCodeReservedErrorBase2 = 50000
 )
 
 // Response 表示一个动作响应.
