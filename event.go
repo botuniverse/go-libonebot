@@ -1,7 +1,6 @@
 package libonebot
 
 import (
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -40,7 +39,6 @@ func makeEvent(time time.Time, type_ string, detailType string) Event {
 type AnyEvent interface {
 	Name() string
 	tryFixUp(platform string, selfID string) error
-	encode() ([]byte, error)
 }
 
 // Name 返回事件名称.
@@ -67,10 +65,6 @@ func (e *Event) tryFixUp(platform string, selfID string) error {
 		e.SelfID = selfID
 	}
 	return nil
-}
-
-func (e *Event) encode() ([]byte, error) {
-	return json.Marshal(e)
 }
 
 // 四种事件基本类型

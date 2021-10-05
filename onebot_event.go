@@ -1,5 +1,7 @@
 package libonebot
 
+import "encoding/json"
+
 // Push 向与 OneBot 实例连接的接受端推送一个事件.
 func (ob *OneBot) Push(event AnyEvent) bool {
 	if event == nil {
@@ -12,7 +14,7 @@ func (ob *OneBot) Push(event AnyEvent) bool {
 	}
 	ob.Logger.Debugf("事件: %#v", event)
 
-	eventBytes, err := event.encode()
+	eventBytes, err := json.Marshal(event)
 	if err != nil {
 		ob.Logger.Warnf("事件序列化失败, 错误: %v", err)
 		return false
