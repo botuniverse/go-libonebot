@@ -52,13 +52,13 @@ func (e *Event) tryFixUp(platform string, selfID string) error {
 	// e.lock.Lock()
 	// defer e.lock.Unlock()
 	if e.Time == 0 {
-		return errors.New("事件 `time` 字段值无效")
+		return errors.New("`time` 字段值无效")
 	}
 	if e.Type != EventTypeMessage && e.Type != EventTypeNotice && e.Type != EventTypeRequest && e.Type != EventTypeMeta {
-		return errors.New("事件 `type` 字段值无效")
+		return errors.New("`type` 字段值无效")
 	}
 	if e.DetailType == "" {
-		return errors.New("事件 `detail_type` 字段值无效")
+		return errors.New("`detail_type` 字段值无效")
 	}
 	e.Platform = platform // override platform field directly
 	if e.SelfID == "" {
