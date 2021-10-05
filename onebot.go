@@ -20,10 +20,8 @@ type OneBot struct {
 
 	actionHandler Handler
 
-	commClosers     []commCloser
-	commClosersLock sync.Mutex
-
 	cancel context.CancelFunc
+	wg     sync.WaitGroup
 }
 
 // NewOneBot 创建一个新的 OneBot 实例.
@@ -53,10 +51,8 @@ func NewOneBot(platform string, selfID string, config *Config) *OneBot {
 
 		actionHandler: nil,
 
-		commClosers:     make([]commCloser, 0),
-		commClosersLock: sync.Mutex{},
-
 		cancel: nil,
+		wg:     sync.WaitGroup{},
 	}
 }
 
@@ -67,37 +63,73 @@ func (ob *OneBot) Run() {
 	ctx, cancel := context.WithCancel(context.Background())
 	ob.cancel = cancel
 
-	ob.startCommMethods()
-	if ob.Config.Heartbeat.Enabled {
-		go ob.heartbeat(ctx)
-	}
+	ob.startCommMethods(ctx)
+	ob.startHeartbeat(ctx)
 
 	ob.Logger.Infof("OneBot 已启动")
 	<-ctx.Done()
-	ob.Logger.Infof("OneBot 已关闭")
 }
 
 // Shutdown 停止 OneBot 实例.
 func (ob *OneBot) Shutdown() {
-	ob.commClosersLock.Lock()
-	for _, closer := range ob.commClosers {
-		closer.Close()
-	}
-	ob.commClosers = make([]commCloser, 0)
-	ob.commClosersLock.Unlock()
-	ob.cancel()
+	ob.cancel()  // this will stop everything (comm methods, heartbeat, etc)
+	ob.wg.Wait() // wait for everything to completely stop
+	ob.Logger.Infof("OneBot 已关闭")
 }
 
-func (ob *OneBot) heartbeat(ctx context.Context) {
-	ticker := time.NewTicker(time.Duration(ob.Config.Heartbeat.Interval) * time.Second)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			event := MakeHeartbeatMetaEvent()
-			ob.Push(&event)
+func (ob *OneBot) startCommMethods(ctx context.Context) {
+	if ob.Config.CommMethods.HTTP != nil {
+		for _, c := range ob.Config.CommMethods.HTTP {
+			ob.wg.Add(1)
+			go commRunHTTP(c, ob, ctx, &ob.wg)
 		}
 	}
+
+	if ob.Config.CommMethods.HTTPWebhook != nil {
+		for _, c := range ob.Config.CommMethods.HTTPWebhook {
+			ob.wg.Add(1)
+			go commRunHTTPWebhook(c, ob, ctx, &ob.wg)
+		}
+	}
+
+	if ob.Config.CommMethods.WS != nil {
+		for _, c := range ob.Config.CommMethods.WS {
+			ob.wg.Add(1)
+			go commRunWS(c, ob, ctx, &ob.wg)
+		}
+	}
+
+	if ob.Config.CommMethods.WSReverse != nil {
+		for _, c := range ob.Config.CommMethods.WSReverse {
+			ob.wg.Add(1)
+			go commRunWSReverse(c, ob, ctx, &ob.wg)
+		}
+	}
+}
+
+func (ob *OneBot) startHeartbeat(ctx context.Context) {
+	if !ob.Config.Heartbeat.Enabled {
+		return
+	}
+
+	ob.wg.Add(1)
+	go func() {
+		defer ob.wg.Done()
+
+		ticker := time.NewTicker(time.Duration(ob.Config.Heartbeat.Interval) * time.Second)
+		defer ticker.Stop()
+
+		ob.Logger.Infof("心跳开始")
+		for {
+			select {
+			case <-ticker.C:
+				ob.Logger.Debugf("扑通")
+				event := MakeHeartbeatMetaEvent()
+				ob.Push(&event)
+			case <-ctx.Done():
+				ob.Logger.Infof("心跳停止")
+				return
+			}
+		}
+	}()
 }

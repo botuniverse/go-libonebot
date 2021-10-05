@@ -71,7 +71,9 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func commStartWS(c ConfigCommWS, ob *OneBot) commCloser {
+func commRunWS(c ConfigCommWS, ob *OneBot, ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
 	ob.Logger.Infof("正在启动 WebSocket (%v)...", addr)
 
@@ -86,15 +88,13 @@ func commStartWS(c ConfigCommWS, ob *OneBot) commCloser {
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			ob.Logger.Errorf("WebSocket (%v) 启动失败, 错误: %v", addr, err)
-		} else {
-			ob.Logger.Infof("WebSocket (%v) 已关闭", addr)
 		}
 	}()
 
-	return func() {
-		if err := server.Shutdown(context.TODO() /* TODO */); err != nil {
-			ob.Logger.Errorf("WebSocket (%v) 关闭失败, 错误: %v", addr, err)
-		}
-		// TODO: wg.Wait() 后再输出已关闭
+	<-ctx.Done()
+	if err := server.Shutdown(context.TODO()); err != nil {
+		ob.Logger.Errorf("WebSocket (%v) 关闭失败, 错误: %v", addr, err)
+	} else {
+		ob.Logger.Infof("WebSocket (%v) 已关闭", addr)
 	}
 }

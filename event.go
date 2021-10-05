@@ -160,7 +160,7 @@ type HeartbeatMetaEvent struct {
 }
 
 // MakeHeartbeatMetaEvent 构造一个心跳元事件.
-func MakeHeartbeatMetaEvent() HeartbeatMetaEvent {
+func MakeHeartbeatMetaEvent() HeartbeatMetaEvent { // TODO: time parameter
 	return HeartbeatMetaEvent{
 		MetaEvent: MakeMetaEvent(time.Now(), "heartbeat"),
 	}

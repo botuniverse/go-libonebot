@@ -91,7 +91,9 @@ func (comm *httpComm) fail(w http.ResponseWriter, retcode int, errFormat string,
 	json.NewEncoder(w).Encode(failedResponse(retcode, err))
 }
 
-func commStartHTTP(c ConfigCommHTTP, ob *OneBot) commCloser {
+func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
 	ob.Logger.Infof("正在启动 HTTP (%v)...", addr)
 
@@ -106,32 +108,26 @@ func commStartHTTP(c ConfigCommHTTP, ob *OneBot) commCloser {
 		Handler: mux,
 	}
 
-	eventChan := ob.openEventListenChan()
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for event := range eventChan {
-			comm.latestEventsLock.Lock()
-			comm.latestEvents = append(comm.latestEvents, event)
-			comm.latestEventsLock.Unlock()
-		}
-	}()
-
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			ob.Logger.Errorf("HTTP (%v) 启动失败, 错误: %v", addr, err)
-		} else {
-			ob.Logger.Infof("HTTP (%v) 已关闭", addr)
 		}
 	}()
 
-	return func() {
-		ob.closeEventListenChan(eventChan)
-		wg.Wait()
-		if err := server.Shutdown(context.TODO() /* TODO */); err != nil {
-			ob.Logger.Errorf("HTTP (%v) 关闭失败, 错误: %v", addr, err)
+	eventChan := ob.openEventListenChan()
+	for {
+		select {
+		case event := <-eventChan:
+			comm.latestEventsLock.Lock()
+			comm.latestEvents = append(comm.latestEvents, event)
+			comm.latestEventsLock.Unlock()
+		case <-ctx.Done():
+			ob.closeEventListenChan(eventChan)
+			if err := server.Shutdown(context.TODO()); err != nil {
+				ob.Logger.Errorf("HTTP (%v) 关闭失败, 错误: %v", addr, err)
+			}
+			ob.Logger.Infof("HTTP (%v) 已关闭", addr)
+			return
 		}
-		// TODO: wg.Wait() 后再输出已关闭
 	}
 }
