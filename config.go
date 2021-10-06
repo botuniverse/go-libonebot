@@ -43,5 +43,5 @@ type ConfigCommWS struct {
 // ConfigCommWSReverse 配置一个反向 WebSocket 通信方式.
 type ConfigCommWSReverse struct {
 	URL               string `mapstructure:"url"`                // 反向 WebSocket 连接地址
-	ReconnectInterval uint32 `mapstructure:"reconnect_interval"` // 反向 WebSocket 重连间隔
+	ReconnectInterval uint32 `mapstructure:"reconnect_interval"` // 反向 WebSocket 重连间隔, 单位: 秒, 必须大于 0
 }
