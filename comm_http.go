@@ -9,8 +9,9 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
+
+	"github.com/tevino/abool/v2"
 )
 
 type httpComm struct {
@@ -112,15 +113,15 @@ func (comm *httpComm) handleGetLatestEvents(r *Request) (resp Response) {
 
 	if timeout > 0 && len(comm.latestEvents) == 0 {
 		// wait for new events or timeout
-		isTimeout := uint32(0)
+		isTimeout := abool.New()
 		timer := time.AfterFunc(time.Duration(timeout)*time.Second, func() {
-			atomic.StoreUint32(&isTimeout, 1)
+			isTimeout.Set()
 			comm.latestEventsCond.Broadcast() // wake up everyone because everyone may be out of time
 			// but note, calling get_latest_events concurrently is undefined behavior
 		})
 		for {
 			comm.latestEventsCond.Wait()
-			if len(comm.latestEvents) > 0 || atomic.LoadUint32(&isTimeout) == 1 {
+			if len(comm.latestEvents) > 0 || isTimeout.IsSet() {
 				break
 			}
 		}
