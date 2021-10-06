@@ -2,6 +2,7 @@ package libonebot
 
 import (
 	"context"
+	"net/http"
 	"net/url"
 	"sync"
 	"time"
@@ -18,7 +19,12 @@ type wsReverseComm struct {
 }
 
 func (comm *wsReverseComm) connectAndServe(ctx context.Context) {
-	conn, _, err := websocket.DefaultDialer.Dial(comm.url, nil)
+	header := http.Header{}
+	header.Set("User-Agent", comm.ob.GetUserAgent())
+	header.Set("X-OneBot-Version", OneBotVersion)
+	header.Set("X-Platform", comm.ob.Platform)
+	header.Set("X-Self-ID", comm.ob.SelfID)
+	conn, _, err := websocket.DefaultDialer.Dial(comm.url, header)
 	if err != nil {
 		comm.ob.Logger.Errorf("WebSocket Reverse (%v) 连接失败, 错误: %v", comm.url, err)
 		return

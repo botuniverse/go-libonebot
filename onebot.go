@@ -2,6 +2,7 @@ package libonebot
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -80,6 +81,11 @@ func (ob *OneBot) Shutdown() {
 	ob.cancel()  // this will stop everything (comm methods, heartbeat, etc)
 	ob.wg.Wait() // wait for everything to completely stop
 	ob.Logger.Infof("OneBot 已关闭")
+}
+
+// GetUserAgent 获取 OneBot 实例的 User-Agent.
+func (ob *OneBot) GetUserAgent() string {
+	return fmt.Sprintf("OneBot/%v (%v) LibOneBot/%v", OneBotVersion, ob.Platform, Version)
 }
 
 func (ob *OneBot) startCommMethods(ctx context.Context) {
