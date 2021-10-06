@@ -8,6 +8,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	Version       = "0.0.0"
+	OneBotVersion = "12"
+)
+
 // OneBot 表示一个 OneBot 实例.
 type OneBot struct {
 	Platform string

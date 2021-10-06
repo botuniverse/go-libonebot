@@ -3,9 +3,11 @@ package libonebot
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"sync"
+	"time"
 )
 
 func commRunHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot, ctx context.Context, wg *sync.WaitGroup) {
@@ -24,16 +26,30 @@ func commRunHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot, ctx context.Context
 	}
 
 	eventChan := ob.openEventListenChan()
-	httpClient := &http.Client{}
+	httpClient := &http.Client{
+		Timeout: time.Duration(c.Timeout) * time.Second, // 0 for no timeout
+	}
 
 	for {
 		select {
 		case event := <-eventChan:
-			// TODO: use special User-Agent
-			// TODO: check status code
-			// TODO: timeout
 			ob.Logger.Debugf("通过 HTTP Webhook (%v) 推送事件 `%v`", c.URL, event.name)
-			httpClient.Post(c.URL, "application/json", bytes.NewReader(event.bytes))
+			req, _ := http.NewRequest(http.MethodPost, c.URL, bytes.NewReader(event.bytes))
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("User-Agent", fmt.Sprintf("OneBot/%v (%v) LibOneBot/%v", OneBotVersion, ob.Platform, Version))
+			req.Header.Set("X-OneBot-Version", OneBotVersion)
+			req.Header.Set("X-Self-ID", ob.SelfID)
+			// TODO: signature
+			resp, err := httpClient.Do(req)
+			if err != nil {
+				ob.Logger.Warnf("通过 HTTP Webhook (%v) 推送事件 `%v` 失败, 错误: %v", c.URL, event.name, err)
+				continue
+			}
+			if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+				ob.Logger.Warnf("通过 HTTP Webhook (%v) 推送事件 `%v` 失败, 状态码: %v", c.URL, event.name, resp.StatusCode)
+				continue
+			}
+			// TODO: call actions
 		case <-ctx.Done():
 			ob.closeEventListenChan(eventChan)
 			ob.Logger.Infof("HTTP Webhook (%v) 已关闭", c.URL)
