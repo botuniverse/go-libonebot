@@ -23,25 +23,13 @@ type httpComm struct {
 	latestEventsCond *sync.Cond
 }
 
-func (comm *httpComm) handleGET(w http.ResponseWriter, r *http.Request) {
-	// TODO
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("<h1>It works!</h1>"))
-}
-
 func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	comm.ob.Logger.Debugf("HTTP request: %v", r)
 
 	// reject unsupported methods
-	if r.Method != "POST" && r.Method != "GET" {
+	if r.Method != "POST" {
 		comm.ob.Logger.Errorf("动作请求只支持通过 POST 方式请求")
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	// handle GET requests
-	if r.Method == "GET" {
-		comm.handleGET(w, r)
 		return
 	}
 
