@@ -5,18 +5,18 @@ import "encoding/json"
 // Push 向与 OneBot 实例连接的接受端推送一个事件.
 func (ob *OneBot) Push(event AnyEvent) bool {
 	if event == nil {
-		ob.Logger.Warnf("事件为空")
+		ob.Logger.Errorf("事件为空")
 		return false
 	}
 	if err := event.tryFixUp(ob.Platform, ob.SelfID); err != nil {
-		ob.Logger.Warnf("事件无效, 错误: %v", err)
+		ob.Logger.Errorf("事件无效, 错误: %v", err)
 		return false
 	}
 	ob.Logger.Debugf("事件: %#v", event)
 
 	eventBytes, err := json.Marshal(event)
 	if err != nil {
-		ob.Logger.Warnf("事件序列化失败, 错误: %v", err)
+		ob.Logger.Errorf("事件序列化失败, 错误: %v", err)
 		return false
 	}
 

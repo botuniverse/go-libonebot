@@ -34,7 +34,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	// reject unsupported methods
 	if r.Method != "POST" && r.Method != "GET" {
-		comm.ob.Logger.Warnf("动作请求只支持通过 POST 方式请求")
+		comm.ob.Logger.Errorf("动作请求只支持通过 POST 方式请求")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -53,7 +53,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		isBinary = true
 	} else {
 		// reject unsupported content types
-		comm.ob.Logger.Warnf("动作请求体 MIME 类型不支持")
+		comm.ob.Logger.Errorf("动作请求体 MIME 类型不支持")
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}

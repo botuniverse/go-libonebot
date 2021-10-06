@@ -36,7 +36,7 @@ func (ob *OneBot) handleRequest(r *Request) (resp Response) {
 	if resp.Status == statusOK {
 		ob.Logger.Infof("动作请求 `%v` 处理成功", r.Action)
 	} else if resp.Status == statusFailed {
-		ob.Logger.Warnf("动作请求 `%v` 处理失败, 错误: %v", r.Action, resp.Message)
+		ob.Logger.Errorf("动作请求 `%v` 处理失败, 错误: %v", r.Action, resp.Message)
 	} else {
 		err := fmt.Errorf("动作处理器没有正确设置响应状态")
 		ob.Logger.Warn(err)
