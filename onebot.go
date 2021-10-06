@@ -112,6 +112,10 @@ func (ob *OneBot) startHeartbeat(ctx context.Context) {
 		return
 	}
 
+	if ob.Config.Heartbeat.Interval == 0 {
+		panic("心跳间隔必须大于 0")
+	}
+
 	ob.wg.Add(1)
 	go func() {
 		defer ob.wg.Done()
