@@ -21,7 +21,7 @@ type Event struct {
 	UUID       string `json:"uuid"`        // 事件唯一标识符
 	Platform   string `json:"platform"`    // OneBot 实现平台名称, 无需在构造时传入
 	SelfID     string `json:"self_id"`     // 机器人自身 ID, 无需在构造时传入
-	Time       int64  `json:"time"`        // 事件发生时间, 可选, 若不传入则使用当前时间
+	Time       int64  `json:"time"`        // 事件发生时间 (Unix 时间戳), 单位: 秒
 	Type       string `json:"type"`        // 事件类型
 	DetailType string `json:"detail_type"` // 事件详细类型
 }

@@ -21,8 +21,10 @@ type Config struct {
 
 // ConfigCommHTTP 配置一个 HTTP 通信方式.
 type ConfigCommHTTP struct {
-	Host string `mapstructure:"host"` // HTTP 服务器监听 IP
-	Port uint16 `mapstructure:"port"` // HTTP 服务器监听端口
+	Host            string `mapstructure:"host"`              // HTTP 服务器监听 IP
+	Port            uint16 `mapstructure:"port"`              // HTTP 服务器监听端口
+	EventEnabled    bool   `mapstructure:"event_enabled"`     // 是否启用 get_latest_events 轮询动作
+	EventBufferSize uint32 `mapstructure:"event_buffer_size"` // 事件缓冲区大小, 超过该大小将会丢弃最旧的事件, 0 表示不限大小
 }
 
 // ConfigCommHTTPWebhook 配置一个 HTTP Webhook 通信方式.

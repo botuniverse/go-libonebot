@@ -12,6 +12,8 @@ import (
 
 type httpComm struct {
 	ob               *OneBot
+	eventEnabled     bool
+	eventBufferSize  uint32
 	latestEvents     []marshaledEvent
 	latestEventsLock sync.Mutex
 }
@@ -68,7 +70,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var response Response
-	if request.Action == ActionGetLatestEvents {
+	if comm.eventEnabled && request.Action == ActionGetLatestEvents {
 		// special action: get_latest_events
 		response = comm.handleGetLatestEvents(&request)
 	} else {
@@ -107,8 +109,10 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 	ob.Logger.Infof("正在启动 HTTP (%v)...", addr)
 
 	comm := &httpComm{
-		ob:           ob,
-		latestEvents: make([]marshaledEvent, 0),
+		ob:              ob,
+		eventEnabled:    c.EventEnabled,
+		eventBufferSize: c.EventBufferSize,
+		latestEvents:    make([]marshaledEvent, 0),
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
@@ -123,20 +127,30 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 		}
 	}()
 
-	eventChan := ob.openEventListenChan()
-	for {
-		select {
-		case event := <-eventChan:
-			comm.latestEventsLock.Lock()
-			comm.latestEvents = append(comm.latestEvents, event)
-			comm.latestEventsLock.Unlock()
-		case <-ctx.Done():
-			ob.closeEventListenChan(eventChan)
-			if err := server.Shutdown(context.TODO()); err != nil {
-				ob.Logger.Errorf("HTTP (%v) 关闭失败, 错误: %v", addr, err)
+	if comm.eventEnabled {
+		eventChan := ob.openEventListenChan()
+	loop:
+		for {
+			select {
+			case event := <-eventChan:
+				comm.latestEventsLock.Lock()
+				if comm.eventBufferSize > 0 && len(comm.latestEvents) >= int(comm.eventBufferSize) {
+					comm.latestEvents = append(comm.latestEvents[1:], event)
+				} else {
+					comm.latestEvents = append(comm.latestEvents, event)
+				}
+				comm.latestEventsLock.Unlock()
+			case <-ctx.Done():
+				ob.closeEventListenChan(eventChan)
+				break loop
 			}
-			ob.Logger.Infof("HTTP (%v) 已关闭", addr)
-			return
 		}
+	} else {
+		<-ctx.Done()
 	}
+
+	if err := server.Shutdown(context.TODO()); err != nil {
+		ob.Logger.Errorf("HTTP (%v) 关闭失败, 错误: %v", addr, err)
+	}
+	ob.Logger.Infof("HTTP (%v) 已关闭", addr)
 }

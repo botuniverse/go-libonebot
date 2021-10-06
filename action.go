@@ -3,7 +3,7 @@ package libonebot
 // ActionXxx 表示 OneBot 标准定义的核心动作名称.
 const (
 	// LibOneBot 自动处理的特殊动作
-	ActionGetLatestEvents     = "get_latest_events"     // 获取最新事件列表
+	ActionGetLatestEvents     = "get_latest_events"     // 获取最新事件列表 (仅 HTTP 通信方式支持)
 	ActionGetSupportedActions = "get_supported_actions" // 获取支持的动作列表
 
 	// OneBot 元信息相关动作
