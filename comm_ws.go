@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/tevino/abool/v2"
 )
 
 type wsComm struct {
@@ -33,6 +34,22 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	// protect concurrent writes to the same connection
 	connWriteLock := &sync.Mutex{}
 
+	isClosed := abool.New()
+	checkError := func(err error) bool {
+		if err != nil {
+			if isClosed.IsNotSet() {
+				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+					comm.ob.Logger.Infof("WebSocket (%v) 连接断开", comm.addr)
+				} else {
+					comm.ob.Logger.Errorf("WebSocket (%v) 连接异常断开, 错误: %v", comm.addr, err)
+				}
+			}
+			isClosed.Set()
+			return true
+		}
+		return false
+	}
+
 	eventChan := comm.ob.openEventListenChan()
 	defer comm.ob.closeEventListenChan(eventChan)
 	go func() {
@@ -40,29 +57,29 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		for event := range eventChan {
 			comm.ob.Logger.Debugf("通过 WebSocket (%v) 推送事件 `%v`", comm.addr, event.name)
 			connWriteLock.Lock()
-			conn.WriteMessage(websocket.TextMessage, event.bytes) // TODO: handle err
+			err := conn.WriteMessage(websocket.TextMessage, event.bytes)
 			connWriteLock.Unlock()
+			if checkError(err) {
+				break
+			}
 		}
 	}()
 
 	for {
 		// this is the only one place we read from the connection, no need to lock
 		messageType, messageBytes, err := conn.ReadMessage()
-		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				comm.ob.Logger.Infof("WebSocket (%v) 连接断开", comm.addr)
-			} else {
-				comm.ob.Logger.Errorf("WebSocket (%v) 连接异常断开, 错误: %v", comm.addr, err)
-			}
+		if checkError(err) {
 			break
 		}
-
 		isBinary := messageType == websocket.BinaryMessage
 		resp := comm.ob.decodeAndHandleRequest(messageBytes, isBinary)
 		respBytes, _ := comm.ob.encodeResponse(resp, isBinary)
 		connWriteLock.Lock()
-		conn.WriteMessage(messageType, respBytes) // TODO: handle err
+		err = conn.WriteMessage(messageType, respBytes)
 		connWriteLock.Unlock()
+		if checkError(err) {
+			break
+		}
 	}
 }
 
