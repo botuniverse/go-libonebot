@@ -3,11 +3,14 @@ package libonebot
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"time"
 )
 
 type httpComm struct {
@@ -16,6 +19,7 @@ type httpComm struct {
 	eventBufferSize  uint32
 	latestEvents     []marshaledEvent
 	latestEventsLock sync.Mutex
+	latestEventsCond *sync.Cond
 }
 
 func (comm *httpComm) handleGET(w http.ResponseWriter, r *http.Request) {
@@ -84,14 +88,55 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 func (comm *httpComm) handleGetLatestEvents(r *Request) (resp Response) {
 	resp.Echo = r.Echo
 	w := ResponseWriter{resp: &resp}
-	events := make([]AnyEvent, 0)
-	// TODO: use condvar to wait until there are events
+
+	timeout, err := r.Params.GetInt64("timeout")
+	if err != nil {
+		timeout = 0 // 0 for no wait
+	}
+	if timeout < 0 {
+		w.WriteFailed(RetCodeBadParam, errors.New("`timeout` 参数值无效"))
+		return
+	}
+
+	limit, err := r.Params.GetInt64("limit")
+	if err != nil {
+		limit = 0 // 0 for no limit
+	}
+	if limit < 0 {
+		w.WriteFailed(RetCodeBadParam, errors.New("`limit` 参数值无效"))
+		return
+	}
+
 	comm.latestEventsLock.Lock()
-	for _, event := range comm.latestEvents {
+	defer comm.latestEventsLock.Unlock()
+
+	if timeout > 0 && len(comm.latestEvents) == 0 {
+		// wait for new events or timeout
+		isTimeout := uint32(0)
+		timer := time.AfterFunc(time.Duration(timeout)*time.Second, func() {
+			atomic.StoreUint32(&isTimeout, 1)
+			comm.latestEventsCond.Broadcast() // wake up everyone because everyone may be out of time
+			// but note, calling get_latest_events concurrently is undefined behavior
+		})
+		for {
+			comm.latestEventsCond.Wait()
+			if len(comm.latestEvents) > 0 || atomic.LoadUint32(&isTimeout) == 1 {
+				break
+			}
+		}
+		timer.Stop()
+	}
+
+	eventCount := int64(len(comm.latestEvents))
+	if limit == 0 || limit > eventCount {
+		// if no limit, return all events
+		limit = eventCount
+	}
+	events := make([]AnyEvent, 0)
+	for _, event := range comm.latestEvents[:limit] {
 		events = append(events, event.raw)
 	}
-	comm.latestEvents = make([]marshaledEvent, 0)
-	comm.latestEventsLock.Unlock()
+	comm.latestEvents = comm.latestEvents[limit:]
 	w.WriteData(events)
 	return
 }
@@ -109,11 +154,14 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 	ob.Logger.Infof("正在启动 HTTP (%v)...", addr)
 
 	comm := &httpComm{
-		ob:              ob,
-		eventEnabled:    c.EventEnabled,
-		eventBufferSize: c.EventBufferSize,
-		latestEvents:    make([]marshaledEvent, 0),
+		ob:               ob,
+		eventEnabled:     c.EventEnabled,
+		eventBufferSize:  c.EventBufferSize,
+		latestEvents:     make([]marshaledEvent, 0),
+		latestEventsLock: sync.Mutex{},
 	}
+	comm.latestEventsCond = sync.NewCond(&comm.latestEventsLock)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
 	server := &http.Server{
@@ -140,6 +188,7 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 					comm.latestEvents = append(comm.latestEvents, event)
 				}
 				comm.latestEventsLock.Unlock()
+				comm.latestEventsCond.Signal() // notify someone to take the events
 			case <-ctx.Done():
 				ob.closeEventListenChan(eventChan)
 				break loop
