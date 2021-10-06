@@ -21,12 +21,12 @@ type OneBot struct {
 	Logger   *logrus.Logger
 
 	eventListenChans     []chan marshaledEvent
-	eventListenChansLock sync.RWMutex
+	eventListenChansLock *sync.RWMutex
 
 	actionHandler Handler
 
 	cancel context.CancelFunc
-	wg     sync.WaitGroup
+	wg     *sync.WaitGroup
 }
 
 // NewOneBot 创建一个新的 OneBot 实例.
@@ -52,12 +52,12 @@ func NewOneBot(platform string, selfID string, config *Config) *OneBot {
 		Logger:   logrus.New(),
 
 		eventListenChans:     make([]chan marshaledEvent, 0),
-		eventListenChansLock: sync.RWMutex{},
+		eventListenChansLock: &sync.RWMutex{},
 
 		actionHandler: nil,
 
 		cancel: nil,
-		wg:     sync.WaitGroup{},
+		wg:     &sync.WaitGroup{},
 	}
 }
 
@@ -86,28 +86,28 @@ func (ob *OneBot) startCommMethods(ctx context.Context) {
 	if ob.Config.CommMethods.HTTP != nil {
 		for _, c := range ob.Config.CommMethods.HTTP {
 			ob.wg.Add(1)
-			go commRunHTTP(c, ob, ctx, &ob.wg)
+			go commRunHTTP(c, ob, ctx, ob.wg)
 		}
 	}
 
 	if ob.Config.CommMethods.HTTPWebhook != nil {
 		for _, c := range ob.Config.CommMethods.HTTPWebhook {
 			ob.wg.Add(1)
-			go commRunHTTPWebhook(c, ob, ctx, &ob.wg)
+			go commRunHTTPWebhook(c, ob, ctx, ob.wg)
 		}
 	}
 
 	if ob.Config.CommMethods.WS != nil {
 		for _, c := range ob.Config.CommMethods.WS {
 			ob.wg.Add(1)
-			go commRunWS(c, ob, ctx, &ob.wg)
+			go commRunWS(c, ob, ctx, ob.wg)
 		}
 	}
 
 	if ob.Config.CommMethods.WSReverse != nil {
 		for _, c := range ob.Config.CommMethods.WSReverse {
 			ob.wg.Add(1)
-			go commRunWSReverse(c, ob, ctx, &ob.wg)
+			go commRunWSReverse(c, ob, ctx, ob.wg)
 		}
 	}
 }
@@ -118,7 +118,8 @@ func (ob *OneBot) startHeartbeat(ctx context.Context) {
 	}
 
 	if ob.Config.Heartbeat.Interval == 0 {
-		panic("心跳间隔必须大于 0")
+		ob.Logger.Errorf("心跳间隔必须大于 0")
+		return
 	}
 
 	ob.wg.Add(1)

@@ -116,6 +116,7 @@ func commRunWSReverse(c ConfigCommWSReverse, ob *OneBot, ctx context.Context, wg
 
 	if c.ReconnectInterval == 0 {
 		ob.Logger.Errorf("WebSocket Reverse 重连间隔必须大于 0")
+		return
 	}
 
 	comm := wsReverseComm{
