@@ -17,12 +17,12 @@ type Request struct {
 
 func validateRequestMap(m EasierMap) error {
 	if action, err := m.GetString("action"); err != nil {
-		return errors.New("动作请求 `action` 字段不存在或类型错误")
+		return errors.New("`action` 字段不存在或类型错误")
 	} else if action == "" {
-		return errors.New("动作请求的 `action` 字段为空")
+		return errors.New("`action` 字段为空")
 	}
 	if _, err := m.GetMap("params"); err != nil {
-		return errors.New("动作请求 `params` 字段不存在或类型错误")
+		return errors.New("`params` 字段不存在或类型错误")
 	}
 	return nil
 }
@@ -50,15 +50,15 @@ func decodeRequest(actionBytes []byte, isBinary bool) (Request, error) {
 	if isBinary {
 		err := msgpack.Unmarshal(actionBytes, &actionRequestMap)
 		if err != nil || actionRequestMap == nil {
-			return Request{}, errors.New("动作请求体不是一个 MsgPack 映射")
+			return Request{}, errors.New("不是一个 MsgPack 映射")
 		}
 	} else {
 		if !gjson.ValidBytes(actionBytes) {
-			return Request{}, errors.New("动作请求体不是合法的 JSON")
+			return Request{}, errors.New("不是合法的 JSON")
 		}
 		m, ok := gjson.Parse(utils.BytesToString(actionBytes)).Value().(map[string]interface{})
 		if !ok || m == nil {
-			return Request{}, errors.New("动作请求体不是一个 JSON 对象")
+			return Request{}, errors.New("不是一个 JSON 对象")
 		}
 		actionRequestMap = m
 	}

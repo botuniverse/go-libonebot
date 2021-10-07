@@ -53,7 +53,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		contentType = "application/msgpack"
 	} else {
 		// reject unsupported content types
-		comm.ob.Logger.Errorf("动作请求体 MIME 类型不支持")
+		comm.ob.Logger.Errorf("动作请求 MIME 类型不支持")
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
@@ -64,13 +64,13 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		comm.fail(w, RetCodeBadRequest, "动作请求体读取失败, 错误: %v", err)
+		comm.fail(w, RetCodeBadRequest, "动作请求读取失败, 错误: %v", err)
 		return
 	}
 
 	request, err := decodeRequest(bodyBytes, isBinary)
 	if err != nil {
-		comm.fail(w, RetCodeBadRequest, "动作请求体解析失败, 错误: %v", err)
+		comm.fail(w, RetCodeBadRequest, "动作请求解析失败, 错误: %v", err)
 		return
 	}
 
