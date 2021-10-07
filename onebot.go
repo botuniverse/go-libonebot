@@ -89,29 +89,29 @@ func (ob *OneBot) GetUserAgent() string {
 }
 
 func (ob *OneBot) startCommMethods(ctx context.Context) {
-	if ob.Config.CommMethods.HTTP != nil {
-		for _, c := range ob.Config.CommMethods.HTTP {
+	if ob.Config.Comm.HTTP != nil {
+		for _, c := range ob.Config.Comm.HTTP {
 			ob.wg.Add(1)
 			go commRunHTTP(c, ob, ctx, ob.wg)
 		}
 	}
 
-	if ob.Config.CommMethods.HTTPWebhook != nil {
-		for _, c := range ob.Config.CommMethods.HTTPWebhook {
+	if ob.Config.Comm.HTTPWebhook != nil {
+		for _, c := range ob.Config.Comm.HTTPWebhook {
 			ob.wg.Add(1)
 			go commRunHTTPWebhook(c, ob, ctx, ob.wg)
 		}
 	}
 
-	if ob.Config.CommMethods.WS != nil {
-		for _, c := range ob.Config.CommMethods.WS {
+	if ob.Config.Comm.WS != nil {
+		for _, c := range ob.Config.Comm.WS {
 			ob.wg.Add(1)
 			go commRunWS(c, ob, ctx, ob.wg)
 		}
 	}
 
-	if ob.Config.CommMethods.WSReverse != nil {
-		for _, c := range ob.Config.CommMethods.WSReverse {
+	if ob.Config.Comm.WSReverse != nil {
+		for _, c := range ob.Config.Comm.WSReverse {
 			ob.wg.Add(1)
 			go commRunWSReverse(c, ob, ctx, ob.wg)
 		}
