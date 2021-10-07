@@ -37,7 +37,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	// authorization
 	if comm.accessToken != "" {
 		if r.Header.Get("Authorization") != "Bearer "+comm.accessToken {
-			comm.ob.Logger.Errorf("动作请求头中的 Authorization 不匹配")
+			comm.ob.Logger.Errorf("请求头中的 Authorization 不匹配")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}

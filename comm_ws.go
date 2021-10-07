@@ -11,8 +11,9 @@ import (
 )
 
 type wsComm struct {
-	ob   *OneBot
-	addr string
+	ob          *OneBot
+	addr        string
+	accessToken string
 }
 
 var wsUpgrader = websocket.Upgrader{
@@ -23,6 +24,15 @@ var wsUpgrader = websocket.Upgrader{
 
 func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	comm.ob.Logger.Debugf("收到来自 %v 的 WebSocket (%v) 连接请求", r.RemoteAddr, comm.addr)
+
+	// authorization
+	if comm.accessToken != "" {
+		if r.Header.Get("Authorization") != "Bearer "+comm.accessToken {
+			comm.ob.Logger.Errorf("请求头中的 Authorization 不匹配")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+	}
 
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -90,7 +100,12 @@ func commRunWS(c ConfigCommWS, ob *OneBot, ctx context.Context, wg *sync.WaitGro
 	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
 	ob.Logger.Infof("正在启动 WebSocket (%v)...", addr)
 
-	comm := &wsComm{ob: ob, addr: addr}
+	comm := &wsComm{
+		ob:          ob,
+		addr:        addr,
+		accessToken: c.AccessToken,
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", comm.handle)
 	server := &http.Server{
