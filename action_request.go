@@ -64,3 +64,38 @@ func decodeRequest(actionBytes []byte, isBinary bool) (Request, error) {
 	}
 	return parseRequestFromMap(actionRequestMap)
 }
+
+func decodeRequestList(actionBytes []byte, isBinary bool) ([]Request, error) {
+	var actionRequestMapList []map[string]interface{}
+	if isBinary {
+		err := msgpack.Unmarshal(actionBytes, &actionRequestMapList)
+		if err != nil || actionRequestMapList == nil {
+			return nil, errors.New("不是一个 MsgPack 映射数组")
+		}
+	} else {
+		if !gjson.ValidBytes(actionBytes) {
+			return nil, errors.New("不是合法的 JSON")
+		}
+		m, ok := gjson.Parse(utils.BytesToString(actionBytes)).Value().([]interface{})
+		if !ok || m == nil {
+			return nil, errors.New("不是一个 JSON 数组")
+		}
+		actionRequestMapList = make([]map[string]interface{}, 0, len(m))
+		for _, v := range m {
+			mm, ok := v.(map[string]interface{})
+			if !ok || mm == nil {
+				return nil, errors.New("不是一个 JSON 对象数组")
+			}
+			actionRequestMapList = append(actionRequestMapList, mm)
+		}
+	}
+	requests := make([]Request, 0, len(actionRequestMapList))
+	for _, actionRequestMap := range actionRequestMapList {
+		r, err := parseRequestFromMap(actionRequestMap)
+		if err != nil {
+			return nil, err
+		}
+		requests = append(requests, r)
+	}
+	return requests, nil
+}
