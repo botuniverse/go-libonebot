@@ -3,15 +3,10 @@ package libonebot
 import (
 	"bytes"
 	"context"
-	"crypto/hmac"
-	"crypto/sha1"
-	"fmt"
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
-
-	"github.com/botuniverse/go-libonebot/utils"
 )
 
 func commRunHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot, ctx context.Context, wg *sync.WaitGroup) {
@@ -44,11 +39,6 @@ func commRunHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot, ctx context.Context
 			req.Header.Set("X-OneBot-Version", OneBotVersion)
 			req.Header.Set("X-Platform", ob.Platform)
 			req.Header.Set("X-Self-ID", ob.SelfID)
-			if c.Secret != "" {
-				mac := hmac.New(sha1.New, utils.StringToBytes(c.Secret))
-				mac.Write(event.bytes)
-				req.Header.Set("X-Signature", fmt.Sprintf("sha1=%x", mac.Sum(nil)))
-			}
 			resp, err := httpClient.Do(req)
 			if err != nil {
 				ob.Logger.Errorf("通过 HTTP Webhook (%v) 推送事件 `%v` 失败, 错误: %v", c.URL, event.name, err)
