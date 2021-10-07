@@ -53,7 +53,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		contentType = "application/msgpack"
 	} else {
 		// reject unsupported content types
-		comm.ob.Logger.Errorf("动作请求 MIME 类型不支持")
+		comm.ob.Logger.Errorf("请求头中的 Content-Type 不支持")
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
