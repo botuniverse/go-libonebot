@@ -14,6 +14,7 @@ import (
 type wsReverseComm struct {
 	ob                *OneBot
 	url               string
+	accessToken       string
 	reconnectInterval time.Duration
 	isShutdown        *abool.AtomicBool
 }
@@ -22,6 +23,9 @@ func (comm *wsReverseComm) connectAndServe(ctx context.Context) {
 	comm.ob.Logger.Debugf("WebSocket Reverse (%v) 开始连接", comm.url)
 
 	header := http.Header{}
+	if comm.accessToken != "" {
+		header.Set("Authorization", "Bearer "+comm.accessToken)
+	}
 	header.Set("User-Agent", comm.ob.GetUserAgent())
 	header.Set("X-OneBot-Version", OneBotVersion)
 	header.Set("X-Platform", comm.ob.Platform)
@@ -130,6 +134,7 @@ func commRunWSReverse(c ConfigCommWSReverse, ob *OneBot, ctx context.Context, wg
 	comm := wsReverseComm{
 		ob:                ob,
 		url:               c.URL,
+		accessToken:       c.AccessToken,
 		reconnectInterval: time.Duration(c.ReconnectInterval) * time.Second,
 		isShutdown:        abool.New(),
 	}
