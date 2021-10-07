@@ -19,6 +19,8 @@ type wsReverseComm struct {
 }
 
 func (comm *wsReverseComm) connectAndServe(ctx context.Context) {
+	comm.ob.Logger.Debugf("WebSocket Reverse (%v) 开始连接", comm.url)
+
 	header := http.Header{}
 	header.Set("User-Agent", comm.ob.GetUserAgent())
 	header.Set("X-OneBot-Version", OneBotVersion)
@@ -142,8 +144,8 @@ func commRunWSReverse(c ConfigCommWSReverse, ob *OneBot, ctx context.Context, wg
 		if comm.isShutdown.IsSet() {
 			break
 		}
+		ob.Logger.Infof("WebSocket Reverse (%v) 将在 %v 秒后尝试重连", comm.url, c.ReconnectInterval)
 		time.Sleep(comm.reconnectInterval)
-		ob.Logger.Infof("WebSocket Reverse (%v) 尝试重连", comm.url)
 	}
 	ob.Logger.Infof("WebSocket Reverse (%v) 已关闭", comm.url)
 }

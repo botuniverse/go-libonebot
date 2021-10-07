@@ -50,7 +50,7 @@ func decodeRequest(actionBytes []byte, isBinary bool) (Request, error) {
 	if isBinary {
 		err := msgpack.Unmarshal(actionBytes, &actionRequestMap)
 		if err != nil || actionRequestMap == nil {
-			return Request{}, errors.New("动作请求不是一个 MsgPack 映射")
+			return Request{}, errors.New("动作请求体不是一个 MsgPack 映射")
 		}
 	} else {
 		if !gjson.ValidBytes(actionBytes) {
@@ -58,7 +58,7 @@ func decodeRequest(actionBytes []byte, isBinary bool) (Request, error) {
 		}
 		m, ok := gjson.Parse(utils.BytesToString(actionBytes)).Value().(map[string]interface{})
 		if !ok || m == nil {
-			return Request{}, errors.New("动作请求不是一个 JSON 对象")
+			return Request{}, errors.New("动作请求体不是一个 JSON 对象")
 		}
 		actionRequestMap = m
 	}

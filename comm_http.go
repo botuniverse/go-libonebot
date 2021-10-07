@@ -28,7 +28,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	// reject unsupported methods
 	if r.Method != "POST" {
-		comm.ob.Logger.Errorf("动作请求只支持通过 POST 方式请求")
+		comm.ob.Logger.Errorf("动作请求不支持通过 %v 方式请求", r.Method)
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -58,7 +58,7 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	request, err := decodeRequest(bodyBytes, isBinary)
 	if err != nil {
-		comm.fail(w, RetCodeBadRequest, "动作请求解析失败, 错误: %v", err)
+		comm.fail(w, RetCodeBadRequest, "动作请求体解析失败, 错误: %v", err)
 		return
 	}
 

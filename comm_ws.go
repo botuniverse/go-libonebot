@@ -22,7 +22,8 @@ var wsUpgrader = websocket.Upgrader{
 }
 
 func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
-	comm.ob.Logger.Infof("收到来自 %v 的 WebSocket (%v) 连接请求", r.RemoteAddr, comm.addr)
+	comm.ob.Logger.Debugf("收到来自 %v 的 WebSocket (%v) 连接请求", r.RemoteAddr, comm.addr)
+
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		comm.ob.Logger.Errorf("WebSocket (%v) 连接失败, 错误: %v", comm.addr, err)
