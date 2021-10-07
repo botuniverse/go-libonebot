@@ -31,9 +31,9 @@ type ConfigCommHTTP struct {
 
 // ConfigCommHTTPWebhook 配置一个 HTTP Webhook 通信方式.
 type ConfigCommHTTPWebhook struct {
-	URL     string `mapstructure:"url"`     // Webhook 上报地址
-	Timeout uint32 `mapstructure:"timeout"` // 上报请求超时时间, 单位: 秒, 0 表示不超时
-	Secret  string `mapstructure:"secret"`  // 签名密钥
+	URL         string `mapstructure:"url"`          // Webhook 上报地址
+	AccessToken string `mapstructure:"access_token"` // 访问令牌
+	Timeout     uint32 `mapstructure:"timeout"`      // 上报请求超时时间, 单位: 秒, 0 表示不超时
 }
 
 // ConfigCommWS 配置一个 WebSocket 通信方式.

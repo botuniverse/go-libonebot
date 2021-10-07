@@ -35,6 +35,9 @@ func commRunHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot, ctx context.Context
 			ob.Logger.Debugf("通过 HTTP Webhook (%v) 推送事件 `%v`", c.URL, event.name)
 			req, _ := http.NewRequest(http.MethodPost, c.URL, bytes.NewReader(event.bytes))
 			req.Header.Set("Content-Type", "application/json")
+			if c.AccessToken != "" {
+				req.Header.Set("Authorization", "Bearer "+c.AccessToken)
+			}
 			req.Header.Set("User-Agent", ob.GetUserAgent())
 			req.Header.Set("X-OneBot-Version", OneBotVersion)
 			req.Header.Set("X-Platform", ob.Platform)
