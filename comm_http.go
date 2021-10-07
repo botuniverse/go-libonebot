@@ -37,8 +37,10 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 	if strings.HasPrefix(contentType, "application/json") {
 		isBinary = false
+		contentType = "application/json"
 	} else if strings.HasPrefix(contentType, "application/msgpack") {
 		isBinary = true
+		contentType = "application/msgpack"
 	} else {
 		// reject unsupported content types
 		comm.ob.Logger.Errorf("动作请求体 MIME 类型不支持")
