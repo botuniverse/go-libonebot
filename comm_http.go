@@ -16,6 +16,7 @@ import (
 
 type httpComm struct {
 	ob               *OneBot
+	accessToken      string
 	eventEnabled     bool
 	eventBufferSize  uint32
 	latestEvents     []marshaledEvent
@@ -31,6 +32,15 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		comm.ob.Logger.Errorf("动作请求不支持通过 %v 方式请求", r.Method)
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
+	}
+
+	// authorization
+	if comm.accessToken != "" {
+		if r.Header.Get("Authorization") != "Bearer "+comm.accessToken {
+			comm.ob.Logger.Errorf("动作请求头中的 Authorization 不匹配")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 	}
 
 	var isBinary bool
@@ -146,6 +156,7 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 
 	comm := &httpComm{
 		ob:               ob,
+		accessToken:      c.AccessToken,
 		eventEnabled:     c.EventEnabled,
 		eventBufferSize:  c.EventBufferSize,
 		latestEvents:     make([]marshaledEvent, 0),
