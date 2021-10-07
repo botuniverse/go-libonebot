@@ -63,6 +63,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 
 	eventChan := comm.ob.openEventListenChan()
 	defer comm.ob.closeEventListenChan(eventChan)
+
 	go func() {
 		// keep pushing events throught the connection
 		for event := range eventChan {

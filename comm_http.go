@@ -179,6 +179,7 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 
 	if comm.eventEnabled {
 		eventChan := ob.openEventListenChan()
+		ob.closeEventListenChan(eventChan)
 	loop:
 		for {
 			select {
@@ -192,7 +193,6 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 				comm.latestEventsLock.Unlock()
 				comm.latestEventsCond.Signal() // notify someone to take the events
 			case <-ctx.Done():
-				ob.closeEventListenChan(eventChan)
 				break loop
 			}
 		}
