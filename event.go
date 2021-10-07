@@ -203,42 +203,6 @@ func MakeGroupMemberDecreaseNoticeEvent(time time.Time, groupID string, userID s
 	}
 }
 
-// GroupAdminSetNoticeEvent 表示一个群管理员设置通知事件.
-type GroupAdminSetNoticeEvent struct {
-	NoticeEvent
-	GroupID    string `json:"group_id"`    // 群 ID
-	UserID     string `json:"user_id"`     // 用户 ID
-	OperatorID string `json:"operator_id"` // 操作者 ID
-}
-
-// MakeGroupAdminSetNoticeEvent 构造一个群管理员设置通知事件.
-func MakeGroupAdminSetNoticeEvent(time time.Time, groupID string, userID string, operatorID string) GroupAdminSetNoticeEvent {
-	return GroupAdminSetNoticeEvent{
-		NoticeEvent: MakeNoticeEvent(time, "group_admin_set"),
-		GroupID:     groupID,
-		UserID:      userID,
-		OperatorID:  operatorID,
-	}
-}
-
-// GroupAdminUnsetNoticeEvent 表示一个群管理员取消通知事件.
-type GroupAdminUnsetNoticeEvent struct {
-	NoticeEvent
-	GroupID    string `json:"group_id"`    // 群 ID
-	UserID     string `json:"user_id"`     // 用户 ID
-	OperatorID string `json:"operator_id"` // 操作者 ID
-}
-
-// MakeGroupAdminUnsetNoticeEvent 构造一个群管理员取消通知事件.
-func MakeGroupAdminUnsetNoticeEvent(time time.Time, groupID string, userID string, operatorID string) GroupAdminUnsetNoticeEvent {
-	return GroupAdminUnsetNoticeEvent{
-		NoticeEvent: MakeNoticeEvent(time, "group_admin_unset"),
-		GroupID:     groupID,
-		UserID:      userID,
-		OperatorID:  operatorID,
-	}
-}
-
 // GroupMemberBanNoticeEvent 表示一个群成员禁言通知事件.
 type GroupMemberBanNoticeEvent struct {
 	NoticeEvent
@@ -269,6 +233,42 @@ type GroupMemberUnbanNoticeEvent struct {
 func MakeGroupMemberUnbanNoticeEvent(time time.Time, groupID string, userID string, operatorID string) GroupMemberUnbanNoticeEvent {
 	return GroupMemberUnbanNoticeEvent{
 		NoticeEvent: MakeNoticeEvent(time, "group_member_unban"),
+		GroupID:     groupID,
+		UserID:      userID,
+		OperatorID:  operatorID,
+	}
+}
+
+// GroupAdminSetNoticeEvent 表示一个群管理员设置通知事件.
+type GroupAdminSetNoticeEvent struct {
+	NoticeEvent
+	GroupID    string `json:"group_id"`    // 群 ID
+	UserID     string `json:"user_id"`     // 用户 ID
+	OperatorID string `json:"operator_id"` // 操作者 ID
+}
+
+// MakeGroupAdminSetNoticeEvent 构造一个群管理员设置通知事件.
+func MakeGroupAdminSetNoticeEvent(time time.Time, groupID string, userID string, operatorID string) GroupAdminSetNoticeEvent {
+	return GroupAdminSetNoticeEvent{
+		NoticeEvent: MakeNoticeEvent(time, "group_admin_set"),
+		GroupID:     groupID,
+		UserID:      userID,
+		OperatorID:  operatorID,
+	}
+}
+
+// GroupAdminUnsetNoticeEvent 表示一个群管理员取消通知事件.
+type GroupAdminUnsetNoticeEvent struct {
+	NoticeEvent
+	GroupID    string `json:"group_id"`    // 群 ID
+	UserID     string `json:"user_id"`     // 用户 ID
+	OperatorID string `json:"operator_id"` // 操作者 ID
+}
+
+// MakeGroupAdminUnsetNoticeEvent 构造一个群管理员取消通知事件.
+func MakeGroupAdminUnsetNoticeEvent(time time.Time, groupID string, userID string, operatorID string) GroupAdminUnsetNoticeEvent {
+	return GroupAdminUnsetNoticeEvent{
+		NoticeEvent: MakeNoticeEvent(time, "group_admin_unset"),
 		GroupID:     groupID,
 		UserID:      userID,
 		OperatorID:  operatorID,
