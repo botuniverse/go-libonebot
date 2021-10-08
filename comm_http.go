@@ -179,7 +179,7 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 
 	if comm.eventEnabled {
 		eventChan := ob.openEventListenChan()
-		ob.closeEventListenChan(eventChan)
+		defer ob.closeEventListenChan(eventChan)
 	loop:
 		for {
 			select {
