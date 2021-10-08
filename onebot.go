@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	Version       = "0.0.0"
-	OneBotVersion = "12"
+	Version       = "0.0.0" // LibOneBot 版本号
+	OneBotVersion = "12"    // OneBot 标准版本
 )
 
 // OneBot 表示一个 OneBot 实例.
