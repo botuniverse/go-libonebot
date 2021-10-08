@@ -19,6 +19,22 @@ func (ob *OneBot) Handle(handler Handler) {
 	ob.actionHandler = handler
 }
 
+// CallAction 调用指定动作.
+//
+// 参数:
+//   action: 要调用的动作名称
+//   params: 动作参数, 若传入 nil 则实际动作参数为空 map
+func (ob *OneBot) CallAction(action string, params map[string]interface{}) Response {
+	if params == nil {
+		params = make(map[string]interface{})
+	}
+	req := &Request{
+		Action: action,
+		Params: EasierMapFromMap(params),
+	}
+	return ob.handleRequest(req)
+}
+
 func (ob *OneBot) handleRequest(r *Request) (resp Response) {
 	ob.Logger.Debugf("动作请求: %+v", r)
 	resp.Echo = r.Echo

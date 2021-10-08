@@ -140,11 +140,7 @@ func (ob *OneBot) startHeartbeat(ctx context.Context) {
 			select {
 			case <-ticker.C:
 				ob.Logger.Debugf("扑通")
-				req := &Request{
-					Action: "get_status",
-					Params: EasierMapFromMap(make(map[string]interface{})),
-				}
-				resp := ob.handleRequest(req)
+				resp := ob.CallAction("get_status", nil)
 				if resp.Status != statusOK {
 					ob.Logger.Warnf("调用 `get_status` 动作失败, 错误: %v", resp.Message)
 				}
