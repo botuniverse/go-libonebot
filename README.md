@@ -19,17 +19,17 @@ Go LibOneBot 可以帮助 OneBot 实现者快速在新的聊天机器人平台�
 package main
 
 import (
-    libob "github.com/botuniverse/go-libonebot"
+	libob "github.com/botuniverse/go-libonebot"
 )
 
 func main() {
-    config := &libob.Config{} // 创建空 Config
-    ob := libob.NewOneBot("nothing", config) // 创建 OneBot 实例
-    ob.HandleFunc(func(w libob.ResponseWriter, r *libob.Request) {
-        // 对所有动作请求都返回 OK
-        w.WriteOK()
-    })
-    ob.Run() // 运行 OneBot 实例
+	config := &libob.Config{}                    // 创建空 Config
+	ob := libob.NewOneBot("nothing", "", config) // 创建 OneBot 实例
+	ob.HandleFunc(func(w libob.ResponseWriter, r *libob.Request) {
+		// 对所有动作请求都返回 OK
+		w.WriteOK()
+	})
+	ob.Run() // 运行 OneBot 实例
 }
 ```
 
