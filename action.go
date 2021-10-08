@@ -37,18 +37,3 @@ const (
 	ActionUploadFile           = "upload_file"            // 上传文件
 	ActionUploadFileFragmented = "upload_file_fragmented" // 分片上传文件
 )
-
-// Action 表示一个动作名称.
-type Action struct {
-	Prefix     string // 动作名称前缀
-	Name       string // 动作名称
-	IsExtended bool   // 是否为扩展动作
-}
-
-// String 返回动作名称的字符串表示, 即动作请求中的 action 字段值.
-func (a Action) String() string {
-	if a.IsExtended {
-		return a.Prefix + "_" + a.Name
-	}
-	return a.Name
-}
