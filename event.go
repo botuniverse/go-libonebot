@@ -79,11 +79,12 @@ type MessageEvent struct {
 }
 
 // MakeMessageEvent 构造一个消息事件.
-func MakeMessageEvent(time time.Time, detailType string, messageID string, message Message) MessageEvent {
+func MakeMessageEvent(time time.Time, detailType string, messageID string, message Message, alt_message string) MessageEvent {
 	return MessageEvent{
-		Event:     makeEvent(time, EventTypeMessage, detailType),
-		MessageID: messageID,
-		Message:   message,
+		Event:      makeEvent(time, EventTypeMessage, detailType),
+		MessageID:  messageID,
+		Message:    message,
+		AltMessage: alt_message,
 	}
 }
 
@@ -132,9 +133,9 @@ type PrivateMessageEvent struct {
 }
 
 // MakePrivateMessageEvent 构造一个私聊消息事件.
-func MakePrivateMessageEvent(time time.Time, messageID string, message Message, userID string) PrivateMessageEvent {
+func MakePrivateMessageEvent(time time.Time, messageID string, message Message, alt_message string, userID string) PrivateMessageEvent {
 	return PrivateMessageEvent{
-		MessageEvent: MakeMessageEvent(time, "private", messageID, message),
+		MessageEvent: MakeMessageEvent(time, "private", messageID, message, alt_message),
 		UserID:       userID,
 	}
 }
@@ -147,9 +148,9 @@ type GroupMessageEvent struct {
 }
 
 // MakeGroupMessageEvent 构造一个群聊消息事件.
-func MakeGroupMessageEvent(time time.Time, messageID string, message Message, groupID string, userID string) GroupMessageEvent {
+func MakeGroupMessageEvent(time time.Time, messageID string, message Message, alt_message string, groupID string, userID string) GroupMessageEvent {
 	return GroupMessageEvent{
-		MessageEvent: MakeMessageEvent(time, "group", messageID, message),
+		MessageEvent: MakeMessageEvent(time, "group", messageID, message, alt_message),
 		GroupID:      groupID,
 		UserID:       userID,
 	}
