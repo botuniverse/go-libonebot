@@ -11,14 +11,14 @@ import (
 	"time"
 )
 
-type commHttpWebhook struct {
+type httpWebhookComm struct {
 	ob          *OneBot
 	url         string
 	accessToken string
 	httpClient  *http.Client
 }
 
-func (comm *commHttpWebhook) post(event marshaledEvent) {
+func (comm *httpWebhookComm) post(event marshaledEvent) {
 	comm.ob.Logger.Debugf("通过 HTTP Webhook (%v) 推送事件 `%v`", comm.url, event.name)
 
 	req, _ := http.NewRequest(http.MethodPost, comm.url, bytes.NewReader(event.bytes))
@@ -89,7 +89,7 @@ func commRunHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot, ctx context.Context
 		return
 	}
 
-	comm := &commHttpWebhook{
+	comm := &httpWebhookComm{
 		ob:          ob,
 		url:         c.URL,
 		accessToken: c.AccessToken,
