@@ -11,7 +11,7 @@ Go LibOneBot 可以帮助 OneBot 实现者快速在新的聊天机器人平台�
 
 ## 用法
 
-使用方法请参考 [Godoc 文档](https://pkg.go.dev/github.com/botuniverse/go-libonebot)（有 Example）和 [richardchien/go-libonebot-repl](https://github.com/richardchien/go-libonebot-repl/blob/master/main.go)（通过交互命令行输入“私聊消息”的 OneBot 实现）。
+使用方法请参考 [Godoc 文档](https://pkg.go.dev/github.com/botuniverse/go-libonebot)（有 Example）和 [richardchien/go-libonebot-repl](https://github.com/richardchien/go-libonebot-repl)（通过交互命令行输入“私聊消息”的 OneBot 实现）。
 
 ## 致谢
 
