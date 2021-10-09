@@ -12,7 +12,7 @@ import (
 )
 
 type wsReverseComm struct {
-	ob                *OneBot
+	wsCommCommon
 	url               string
 	accessToken       string
 	reconnectInterval time.Duration
@@ -68,15 +68,7 @@ func (comm *wsReverseComm) connectAndServe(ctx context.Context) {
 			if checkError(err) {
 				break
 			}
-			isBinary := messageType == websocket.BinaryMessage
-			resp := comm.ob.decodeAndHandleRequest(messageBytes, isBinary)
-			respBytes, _ := comm.ob.encodeResponse(resp, isBinary)
-			connWriteLock.Lock()
-			err = conn.WriteMessage(messageType, respBytes)
-			connWriteLock.Unlock()
-			if checkError(err) {
-				break
-			}
+			go comm.handleRequest(conn, connWriteLock, messageBytes, messageType)
 		}
 	}()
 
@@ -88,12 +80,7 @@ loop:
 		select {
 		case event := <-eventChan:
 			comm.ob.Logger.Debugf("通过 WebSocket Reverse (%v) 推送事件 `%v`", comm.url, event.name)
-			connWriteLock.Lock()
-			err := conn.WriteMessage(websocket.TextMessage, event.bytes)
-			connWriteLock.Unlock()
-			if checkError(err) {
-				break loop
-			}
+			go comm.pushEvent(conn, connWriteLock, event)
 		case <-connCtx.Done(): // connection closed
 			break loop
 		case <-ctx.Done(): // onebot shutdown
@@ -132,7 +119,7 @@ func commRunWSReverse(c ConfigCommWSReverse, ob *OneBot, ctx context.Context, wg
 	}
 
 	comm := wsReverseComm{
-		ob:                ob,
+		wsCommCommon:      wsCommCommon{ob: ob},
 		url:               c.URL,
 		accessToken:       c.AccessToken,
 		reconnectInterval: time.Duration(c.ReconnectInterval) * time.Second,

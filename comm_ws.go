@@ -10,8 +10,27 @@ import (
 	"github.com/tevino/abool/v2"
 )
 
+type wsCommCommon struct {
+	ob *OneBot
+}
+
+func (comm *wsCommCommon) handleRequest(conn *websocket.Conn, connWriteLock *sync.Mutex, messageBytes []byte, messageType int) {
+	isBinary := messageType == websocket.BinaryMessage
+	resp := comm.ob.decodeAndHandleRequest(messageBytes, isBinary)
+	respBytes, _ := comm.ob.encodeResponse(resp, isBinary)
+	connWriteLock.Lock()
+	conn.WriteMessage(messageType, respBytes)
+	connWriteLock.Unlock()
+}
+
+func (comm *wsCommCommon) pushEvent(conn *websocket.Conn, connWriteLock *sync.Mutex, event marshaledEvent) {
+	connWriteLock.Lock()
+	conn.WriteMessage(websocket.TextMessage, event.bytes)
+	connWriteLock.Unlock()
+}
+
 type wsComm struct {
-	ob          *OneBot
+	wsCommCommon
 	addr        string
 	accessToken string
 }
@@ -68,12 +87,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		// keep pushing events throught the connection
 		for event := range eventChan {
 			comm.ob.Logger.Debugf("通过 WebSocket (%v) 推送事件 `%v`", comm.addr, event.name)
-			connWriteLock.Lock()
-			err := conn.WriteMessage(websocket.TextMessage, event.bytes)
-			connWriteLock.Unlock()
-			if checkError(err) {
-				break
-			}
+			go comm.pushEvent(conn, connWriteLock, event)
 		}
 	}()
 
@@ -83,15 +97,7 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		if checkError(err) {
 			break
 		}
-		isBinary := messageType == websocket.BinaryMessage
-		resp := comm.ob.decodeAndHandleRequest(messageBytes, isBinary)
-		respBytes, _ := comm.ob.encodeResponse(resp, isBinary)
-		connWriteLock.Lock()
-		err = conn.WriteMessage(messageType, respBytes)
-		connWriteLock.Unlock()
-		if checkError(err) {
-			break
-		}
+		go comm.handleRequest(conn, connWriteLock, messageBytes, messageType)
 	}
 }
 
@@ -102,9 +108,9 @@ func commRunWS(c ConfigCommWS, ob *OneBot, ctx context.Context, wg *sync.WaitGro
 	ob.Logger.Infof("正在启动 WebSocket (%v)...", addr)
 
 	comm := &wsComm{
-		ob:          ob,
-		addr:        addr,
-		accessToken: c.AccessToken,
+		wsCommCommon: wsCommCommon{ob: ob},
+		addr:         addr,
+		accessToken:  c.AccessToken,
 	}
 
 	mux := http.NewServeMux()

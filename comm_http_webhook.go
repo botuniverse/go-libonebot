@@ -19,8 +19,6 @@ type httpWebhookComm struct {
 }
 
 func (comm *httpWebhookComm) post(event marshaledEvent) {
-	comm.ob.Logger.Debugf("通过 HTTP Webhook (%v) 推送事件 `%v`", comm.url, event.name)
-
 	req, _ := http.NewRequest(http.MethodPost, comm.url, bytes.NewReader(event.bytes))
 	req.Header.Set("Content-Type", "application/json")
 	if comm.accessToken != "" {
@@ -104,6 +102,7 @@ func commRunHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot, ctx context.Context
 	for {
 		select {
 		case event := <-eventChan:
+			comm.ob.Logger.Debugf("通过 HTTP Webhook (%v) 推送事件 `%v`", comm.url, event.name)
 			go comm.post(event)
 		case <-ctx.Done():
 			ob.Logger.Infof("HTTP Webhook (%v) 已关闭", c.URL)
