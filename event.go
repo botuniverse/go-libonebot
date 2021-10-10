@@ -281,6 +281,7 @@ type GroupMessageDeleteNoticeEvent struct {
 	NoticeEvent
 	GroupID    string `json:"group_id"`    // 群 ID
 	MessageID  string `json:"message_id"`  // 消息 ID
+	UserID     string `json:"user_id"`     // 消息发送者 ID
 	OperatorID string `json:"operator_id"` // 操作者 ID
 }
 
@@ -290,11 +291,12 @@ const (
 )
 
 // MakeGroupMessageDeleteNoticeEvent 构造一个群消息删除通知事件.
-func MakeGroupMessageDeleteNoticeEvent(time time.Time, groupID string, messageID string, operatorID string) GroupMessageDeleteNoticeEvent {
+func MakeGroupMessageDeleteNoticeEvent(time time.Time, groupID string, messageID string, userID string, operatorID string) GroupMessageDeleteNoticeEvent {
 	return GroupMessageDeleteNoticeEvent{
 		NoticeEvent: MakeNoticeEvent(time, "group_message_delete"),
 		GroupID:     groupID,
 		MessageID:   messageID,
+		UserID:      userID,
 		OperatorID:  operatorID,
 	}
 }
@@ -331,13 +333,15 @@ func MakeFriendDecreaseNoticeEvent(time time.Time, userID string) FriendDecrease
 type PrivateMessageDeleteNoticeEvent struct {
 	NoticeEvent
 	MessageID string `json:"message_id"` // 消息 ID
+	UserID    string `json:"user_id"`    // 消息发送者 ID
 }
 
 // MakePrivateMessageDeleteNoticeEvent 构造一个私聊消息删除通知事件.
-func MakePrivateMessageDeleteNoticeEvent(time time.Time, messageID string) PrivateMessageDeleteNoticeEvent {
+func MakePrivateMessageDeleteNoticeEvent(time time.Time, messageID string, userID string) PrivateMessageDeleteNoticeEvent {
 	return PrivateMessageDeleteNoticeEvent{
 		NoticeEvent: MakeNoticeEvent(time, "private_message_delete"),
 		MessageID:   messageID,
+		UserID:      userID,
 	}
 }
 
