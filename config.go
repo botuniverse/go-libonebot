@@ -9,7 +9,7 @@ type Config struct {
 // ConfigHeartbeat 配置心跳.
 type ConfigHeartbeat struct {
 	Enabled  bool   `mapstructure:"enabled"`  // 是否启用
-	Interval uint32 `mapstructure:"interval"` // 心跳间隔, 单位: 秒, 必须大于 0
+	Interval uint32 `mapstructure:"interval"` // 心跳间隔, 单位: 毫秒, 必须大于 0
 }
 
 // ConfigComm 配置通信方式.
@@ -33,7 +33,7 @@ type ConfigCommHTTP struct {
 type ConfigCommHTTPWebhook struct {
 	URL         string `mapstructure:"url"`          // Webhook 上报地址
 	AccessToken string `mapstructure:"access_token"` // 访问令牌
-	Timeout     uint32 `mapstructure:"timeout"`      // 上报请求超时时间, 单位: 秒, 0 表示不超时
+	Timeout     uint32 `mapstructure:"timeout"`      // 上报请求超时时间, 单位: 毫秒, 0 表示不超时
 }
 
 // ConfigCommWS 配置一个 WebSocket 通信方式.
@@ -47,5 +47,5 @@ type ConfigCommWS struct {
 type ConfigCommWSReverse struct {
 	URL               string `mapstructure:"url"`                // 反向 WebSocket 连接地址
 	AccessToken       string `mapstructure:"access_token"`       // 访问令牌
-	ReconnectInterval uint32 `mapstructure:"reconnect_interval"` // 反向 WebSocket 重连间隔, 单位: 秒, 必须大于 0
+	ReconnectInterval uint32 `mapstructure:"reconnect_interval"` // 反向 WebSocket 重连间隔, 单位: 毫秒, 必须大于 0
 }

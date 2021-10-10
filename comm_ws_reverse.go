@@ -122,7 +122,7 @@ func commRunWSReverse(c ConfigCommWSReverse, ob *OneBot, ctx context.Context, wg
 		wsCommCommon:      wsCommCommon{ob: ob},
 		url:               c.URL,
 		accessToken:       c.AccessToken,
-		reconnectInterval: time.Duration(c.ReconnectInterval) * time.Second,
+		reconnectInterval: time.Duration(c.ReconnectInterval) * time.Millisecond,
 		isShutdown:        abool.New(),
 	}
 

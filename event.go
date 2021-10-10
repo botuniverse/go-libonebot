@@ -350,7 +350,7 @@ func MakePrivateMessageDeleteNoticeEvent(time time.Time, messageID string, userI
 // HeartbeatMetaEvent 表示一个心跳元事件.
 type HeartbeatMetaEvent struct {
 	MetaEvent
-	Interval int64       `json:"interval"` // 到下次心跳的间隔，单位: 秒
+	Interval int64       `json:"interval"` // 到下次心跳的间隔，单位: 毫秒
 	Status   interface{} `json:"status"`   // OneBot 状态, 与 get_status 动作响应数据一致
 }
 

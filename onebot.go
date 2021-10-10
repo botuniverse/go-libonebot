@@ -132,7 +132,7 @@ func (ob *OneBot) startHeartbeat(ctx context.Context) {
 	go func() {
 		defer ob.wg.Done()
 
-		ticker := time.NewTicker(time.Duration(ob.Config.Heartbeat.Interval) * time.Second)
+		ticker := time.NewTicker(time.Duration(ob.Config.Heartbeat.Interval) * time.Millisecond)
 		defer ticker.Stop()
 
 		ob.Logger.Infof("心跳开始")

@@ -92,7 +92,7 @@ func commRunHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot, ctx context.Context
 		url:         c.URL,
 		accessToken: c.AccessToken,
 		httpClient: &http.Client{
-			Timeout: time.Duration(c.Timeout) * time.Second, // 0 for no timeout
+			Timeout: time.Duration(c.Timeout) * time.Millisecond, // 0 for no timeout
 		},
 	}
 

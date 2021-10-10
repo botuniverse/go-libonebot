@@ -114,7 +114,7 @@ func (comm *httpComm) handleGetLatestEvents(r *Request) (resp Response) {
 	if timeout > 0 && len(comm.latestEvents) == 0 {
 		// wait for new events or timeout
 		isTimeout := abool.New()
-		timer := time.AfterFunc(time.Duration(timeout)*time.Second, func() {
+		timer := time.AfterFunc(time.Duration(timeout)*time.Millisecond, func() {
 			isTimeout.Set()
 			comm.latestEventsCond.Broadcast() // wake up everyone because everyone may be out of time
 			// but note, calling get_latest_events concurrently is undefined behavior
