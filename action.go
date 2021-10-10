@@ -32,7 +32,7 @@ const (
 	ActionSetGroupAdmin      = "set_group_admin"       // 设置群管理员
 	ActionUnsetGroupAdmin    = "unset_group_admin"     // 取消群管理员
 
-	// 文件相关
+	// 文件相关动作
 	ActionGetFile              = "get_file"               // 获取文件
 	ActionUploadFile           = "upload_file"            // 上传文件
 	ActionUploadFileFragmented = "upload_file_fragmented" // 分片上传文件
