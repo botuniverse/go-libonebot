@@ -8,7 +8,7 @@ func (ob *OneBot) Push(event AnyEvent) bool {
 		ob.Logger.Errorf("事件为空")
 		return false
 	}
-	if err := event.tryFixUp(ob.Platform, ob.SelfID); err != nil {
+	if err := event.tryFixUp(ob.Impl, ob.Platform, ob.SelfID); err != nil {
 		ob.Logger.Errorf("事件无效, 错误: %v", err)
 		return false
 	}

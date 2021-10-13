@@ -11,9 +11,13 @@ import (
 
 func Example_1() {
 	// 示例: 什么都不做的 OneBot 实现
-	config := &libob.Config{}                             // 创建空 Config
-	ob := libob.NewOneBot("nothing", "id_of_bot", config) // 创建 OneBot 实例
-	ob.Run()                                              // 运行 OneBot 实例
+
+	// 创建空 Config
+	config := &libob.Config{}
+	// 创建 OneBot 实例
+	ob := libob.NewOneBot("go_onebot_nothing", "nothing", "id_of_bot", config)
+	// 运行 OneBot 实例
+	ob.Run()
 }
 
 var ob *libob.OneBot
@@ -38,11 +42,12 @@ func Example_3() {
 		config *MyConfig
 	}
 
-	const Platform = "my_platform"
+	const Impl = "go_onebot_tg"
+	const Platform = "tg"
 
 	config := &MyConfig{ /* ... */ }
 	ob := &MyOneBot{
-		OneBot: libob.NewOneBot(Platform, config.SelfID, &config.Config),
+		OneBot: libob.NewOneBot(Impl, Platform, config.SelfID, &config.Config),
 		config: config,
 	}
 }

@@ -16,6 +16,7 @@ const (
 
 // OneBot 表示一个 OneBot 实例.
 type OneBot struct {
+	Impl     string
 	Platform string
 	SelfID   string
 	Config   *Config
@@ -33,12 +34,16 @@ type OneBot struct {
 // NewOneBot 创建一个新的 OneBot 实例.
 //
 // 参数:
-//   platform: OneBot 实现平台名称, 应和扩展动作名称、扩展参数等前缀相同, 不能为空
+//   impl: OneBot 实现名称, 不能为空
+//   platform: OneBot 实现平台名称, 不能为空
 //   selfID: OneBot 实例对应的机器人自身 ID, 不能为空
 //   config: OneBot 配置, 不能为 nil
-func NewOneBot(platform string, selfID string, config *Config) *OneBot {
+func NewOneBot(impl string, platform string, selfID string, config *Config) *OneBot {
+	if impl == "" {
+		panic("必须提供 OneBot 实现名称")
+	}
 	if platform == "" {
-		panic("必须提供 OneBot 平台名称")
+		panic("必须提供 OneBot 实现平台名称")
 	}
 	if selfID == "" {
 		panic("必须提供 OneBot 实例对应的机器人自身 ID")
@@ -47,6 +52,7 @@ func NewOneBot(platform string, selfID string, config *Config) *OneBot {
 		panic("必须提供 OneBot 配置")
 	}
 	return &OneBot{
+		Impl:     impl,
 		Platform: platform,
 		SelfID:   selfID,
 		Config:   config,

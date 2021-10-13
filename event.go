@@ -19,6 +19,7 @@ const (
 type Event struct {
 	// lock       sync.RWMutex
 	ID         string `json:"id"`          // 事件 ID, 构造时自动生成
+	Impl       string `json:"impl"`        // OneBot 实现名称, 无需在构造时传入
 	Platform   string `json:"platform"`    // OneBot 实现平台名称, 无需在构造时传入
 	SelfID     string `json:"self_id"`     // 机器人自身 ID, 无需在构造时传入
 	Time       int64  `json:"time"`        // 事件发生时间 (Unix 时间戳), 单位: 秒
@@ -39,7 +40,7 @@ func makeEvent(time time.Time, type_ string, detailType string) Event {
 // AnyEvent 是所有事件对象共同实现的接口.
 type AnyEvent interface {
 	Name() string
-	tryFixUp(platform string, selfID string) error
+	tryFixUp(impl string, platform string, selfID string) error
 }
 
 // Name 返回事件名称.
@@ -49,7 +50,7 @@ func (e *Event) Name() string {
 	return e.Type + "." + e.DetailType
 }
 
-func (e *Event) tryFixUp(platform string, selfID string) error {
+func (e *Event) tryFixUp(impl string, platform string, selfID string) error {
 	// e.lock.Lock()
 	// defer e.lock.Unlock()
 	if e.Time == 0 {
@@ -61,7 +62,8 @@ func (e *Event) tryFixUp(platform string, selfID string) error {
 	if e.DetailType == "" {
 		return errors.New("`detail_type` 字段值无效")
 	}
-	e.Platform = platform // override platform field directly
+	e.Impl = impl         // overwrite impl field directly
+	e.Platform = platform // overwrite platform field directly
 	if e.SelfID == "" {
 		e.SelfID = selfID
 	}

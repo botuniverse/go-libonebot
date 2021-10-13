@@ -28,6 +28,7 @@ func (comm *wsReverseComm) connectAndServe(ctx context.Context) {
 	}
 	header.Set("User-Agent", comm.ob.GetUserAgent())
 	header.Set("X-OneBot-Version", OneBotVersion)
+	header.Set("X-Impl", comm.ob.Impl)
 	header.Set("X-Platform", comm.ob.Platform)
 	header.Set("X-Self-ID", comm.ob.SelfID)
 	conn, _, err := websocket.DefaultDialer.Dial(comm.url, header)
