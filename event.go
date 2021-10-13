@@ -18,7 +18,7 @@ const (
 // Event 包含所有类型事件的共同字段.
 type Event struct {
 	// lock       sync.RWMutex
-	UUID       string `json:"uuid"`        // 事件唯一标识符
+	ID         string `json:"id"`          // 事件 ID, 构造时自动生成
 	Platform   string `json:"platform"`    // OneBot 实现平台名称, 无需在构造时传入
 	SelfID     string `json:"self_id"`     // 机器人自身 ID, 无需在构造时传入
 	Time       int64  `json:"time"`        // 事件发生时间 (Unix 时间戳), 单位: 秒
@@ -29,7 +29,7 @@ type Event struct {
 
 func makeEvent(time time.Time, type_ string, detailType string) Event {
 	return Event{
-		UUID:       uuid.New().String(),
+		ID:         uuid.New().String(),
 		Time:       time.Unix(),
 		Type:       type_,
 		DetailType: detailType,
