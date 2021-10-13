@@ -37,7 +37,7 @@ const (
 	RetCodeDatabaseError      = 31000 // 数据库错误
 	RetCodeFilesystemError    = 32000 // 文件系统错误
 	RetCodeNetworkError       = 33000 // 网络错误
-	RetCodePlatformError      = 34000 // 聊天平台错误 (如由于聊天平台限制导致消息发送失败等)
+	RetCodePlatformError      = 34000 // 机器人平台错误 (如由于机器人平台限制导致消息发送失败等)
 	RetCodeLogicError         = 35000 // 动作逻辑错误 (如尝试向不存在的用户发送消息等)
 	RetCodeIAmTired           = 36000 // 我不想干了 (一位 OneBot 实现决定罢工)
 
