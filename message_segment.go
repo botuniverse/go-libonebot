@@ -119,6 +119,13 @@ func VoiceSegment(fileID string) Segment {
 	})
 }
 
+// AudioSegment 构造一个音频消息段.
+func AudioSegment(fileID string) Segment {
+	return CustomSegment(SegTypeAudio, map[string]interface{}{
+		"file_id": fileID,
+	})
+}
+
 // VideoSegment 构造一个视频消息段.
 func VideoSegment(fileID string) Segment {
 	return CustomSegment(SegTypeVideo, map[string]interface{}{
