@@ -52,7 +52,7 @@ type Response struct {
 	RetCode int         `json:"retcode"`        // 返回码
 	Data    interface{} `json:"data"`           // 响应数据
 	Message string      `json:"message"`        // 错误信息
-	Echo    interface{} `json:"echo,omitempty"` // 动作请求的 echo 字段 (原样返回)
+	Echo    string      `json:"echo,omitempty"` // 动作请求的 echo 字段 (原样返回)
 }
 
 func failedResponse(retCode int, err error) Response {

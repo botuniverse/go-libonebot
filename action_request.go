@@ -10,9 +10,9 @@ import (
 
 // Request 表示一个动作请求.
 type Request struct {
-	Action string      // 动作名称
-	Params EasierMap   // 动作参数
-	Echo   interface{} // 动作请求的 echo 字段
+	Action string    // 动作名称
+	Params EasierMap // 动作参数
+	Echo   string    // 动作请求的 echo 字段
 }
 
 func validateRequestMap(m EasierMap) error {
@@ -23,6 +23,11 @@ func validateRequestMap(m EasierMap) error {
 	}
 	if _, err := m.GetMap("params"); err != nil {
 		return errors.New("`params` 字段不存在或类型错误")
+	}
+	_, err1 := m.Get("echo")
+	_, err2 := m.GetString("echo")
+	if err1 == nil && err2 != nil {
+		return errors.New("`echo` 字段类型错误")
 	}
 	return nil
 }
@@ -36,7 +41,7 @@ func parseRequestFromMap(m map[string]interface{}) (Request, error) {
 
 	action, _ := em.GetString("action")
 	params, _ := em.GetMap("params")
-	echo, _ := em.Get("echo")
+	echo, _ := em.GetString("echo")
 	r := Request{
 		Action: action,
 		Params: params,
