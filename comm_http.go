@@ -184,6 +184,10 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 		for {
 			select {
 			case event := <-eventChan:
+				if _, ok := event.raw.(*HeartbeatMetaEvent); ok {
+					// ignore heartbeat event
+					continue
+				}
 				comm.latestEventsLock.Lock()
 				if comm.eventBufferSize > 0 && len(comm.latestEvents) >= int(comm.eventBufferSize) {
 					comm.latestEvents = append(comm.latestEvents[1:], event)
