@@ -34,6 +34,7 @@ const (
 	SegTypeMentionAll = "mention_all" // 提及所有人消息段
 	SegTypeImage      = "image"       // 图片消息段
 	SegTypeVoice      = "voice"       // 语音消息段
+	SegTypeAudio      = "audio"       // 音频消息段
 	SegTypeVideo      = "video"       // 视频消息段
 	SegTypeFile       = "file"        // 文件消息段
 	SegTypeLocation   = "location"    // 位置消息段
