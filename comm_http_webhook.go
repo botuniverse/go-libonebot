@@ -13,6 +13,7 @@ import (
 
 type httpWebhookComm struct {
 	ob          *OneBot
+	config      ConfigCommHTTPWebhook
 	url         string
 	accessToken string
 	httpClient  *http.Client
@@ -62,7 +63,10 @@ func (comm *httpWebhookComm) post(event marshaledEvent) {
 			comm.ob.Logger.Warnf("动作请求列表读取失败, 已忽略, 错误: %v", err)
 			return
 		}
-		requests, err := decodeRequestList(respBody, isBinary)
+		requests, err := decodeRequestList(respBody, isBinary, RequestComm{
+			Method: CommMethodHTTPWebhook,
+			Config: comm.config,
+		})
 		if err != nil {
 			comm.ob.Logger.Warnf("动作请求列表解析失败, 已忽略, 错误: %v", err)
 			return
@@ -90,6 +94,7 @@ func commRunHTTPWebhook(c ConfigCommHTTPWebhook, ob *OneBot, ctx context.Context
 
 	comm := &httpWebhookComm{
 		ob:          ob,
+		config:      c,
 		url:         c.URL,
 		accessToken: c.AccessToken,
 		httpClient: &http.Client{

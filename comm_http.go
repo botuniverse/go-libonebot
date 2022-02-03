@@ -16,6 +16,7 @@ import (
 
 type httpComm struct {
 	ob               *OneBot
+	config           ConfigCommHTTP
 	accessToken      string
 	eventEnabled     bool
 	eventBufferSize  uint32
@@ -68,7 +69,10 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request, err := decodeRequest(bodyBytes, isBinary)
+	request, err := decodeRequest(bodyBytes, isBinary, RequestComm{
+		Method: CommMethodHTTP,
+		Config: comm.config,
+	})
 	if err != nil {
 		comm.fail(w, RetCodeBadRequest, "动作请求解析失败, 错误: %v", err)
 		return
@@ -156,6 +160,7 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 
 	comm := &httpComm{
 		ob:               ob,
+		config:           c,
 		accessToken:      c.AccessToken,
 		eventEnabled:     c.EventEnabled,
 		eventBufferSize:  c.EventBufferSize,

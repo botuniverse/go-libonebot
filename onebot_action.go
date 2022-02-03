@@ -61,8 +61,8 @@ func (ob *OneBot) handleRequest(r *Request) (resp Response) {
 	return
 }
 
-func (ob *OneBot) decodeAndHandleRequest(actionBytes []byte, isBinary bool) Response {
-	request, err := decodeRequest(actionBytes, isBinary)
+func (ob *OneBot) decodeAndHandleRequest(actionBytes []byte, isBinary bool, comm RequestComm) Response {
+	request, err := decodeRequest(actionBytes, isBinary, comm)
 	if err != nil {
 		err := fmt.Errorf("动作请求解析失败, 错误: %v", err)
 		ob.Logger.Warn(err)

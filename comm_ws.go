@@ -14,9 +14,9 @@ type wsCommCommon struct {
 	ob *OneBot
 }
 
-func (comm *wsCommCommon) handleRequest(conn *websocket.Conn, connWriteLock *sync.Mutex, messageBytes []byte, messageType int) {
+func (comm *wsCommCommon) handleRequest(conn *websocket.Conn, connWriteLock *sync.Mutex, messageBytes []byte, messageType int, reqComm RequestComm) {
 	isBinary := messageType == websocket.BinaryMessage
-	resp := comm.ob.decodeAndHandleRequest(messageBytes, isBinary)
+	resp := comm.ob.decodeAndHandleRequest(messageBytes, isBinary, reqComm)
 	respBytes, _ := comm.ob.encodeResponse(resp, isBinary)
 	connWriteLock.Lock()
 	conn.WriteMessage(messageType, respBytes)
@@ -31,6 +31,7 @@ func (comm *wsCommCommon) pushEvent(conn *websocket.Conn, connWriteLock *sync.Mu
 
 type wsComm struct {
 	wsCommCommon
+	config      ConfigCommWS
 	addr        string
 	accessToken string
 }
@@ -97,7 +98,10 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 		if checkError(err) {
 			break
 		}
-		go comm.handleRequest(conn, connWriteLock, messageBytes, messageType)
+		go comm.handleRequest(conn, connWriteLock, messageBytes, messageType, RequestComm{
+			Method: CommMethodWS,
+			Config: comm.config,
+		})
 	}
 }
 
@@ -109,6 +113,7 @@ func commRunWS(c ConfigCommWS, ob *OneBot, ctx context.Context, wg *sync.WaitGro
 
 	comm := &wsComm{
 		wsCommCommon: wsCommCommon{ob: ob},
+		config:       c,
 		addr:         addr,
 		accessToken:  c.AccessToken,
 	}

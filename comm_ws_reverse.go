@@ -13,6 +13,7 @@ import (
 
 type wsReverseComm struct {
 	wsCommCommon
+	config            ConfigCommWSReverse
 	url               string
 	accessToken       string
 	reconnectInterval time.Duration
@@ -69,7 +70,10 @@ func (comm *wsReverseComm) connectAndServe(ctx context.Context) {
 			if checkError(err) {
 				break
 			}
-			go comm.handleRequest(conn, connWriteLock, messageBytes, messageType)
+			go comm.handleRequest(conn, connWriteLock, messageBytes, messageType, RequestComm{
+				Method: CommMethodWSReverse,
+				Config: comm.config,
+			})
 		}
 	}()
 
@@ -121,6 +125,7 @@ func commRunWSReverse(c ConfigCommWSReverse, ob *OneBot, ctx context.Context, wg
 
 	comm := wsReverseComm{
 		wsCommCommon:      wsCommCommon{ob: ob},
+		config:            c,
 		url:               c.URL,
 		accessToken:       c.AccessToken,
 		reconnectInterval: time.Duration(c.ReconnectInterval) * time.Millisecond,

@@ -8,11 +8,26 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+const (
+	CommMethodNone        = 0 // 无通信方式 (OneBot 实现内部构造的请求)
+	CommMethodHTTP        = 1 // HTTP 通信方式
+	CommMethodHTTPWebhook = 2 // HTTP Webhook 通信方式
+	CommMethodWS          = 3 // WebSocket 通信方式
+	CommMethodWSReverse   = 4 // 反向 WebSocket 通信方式
+)
+
+// RequestCommMethod 表示接收动作请求的通信方式.
+type RequestComm struct {
+	Method int         // 通信方式
+	Config interface{} // 通信方式配置
+}
+
 // Request 表示一个动作请求.
 type Request struct {
-	Action string    // 动作名称
-	Params EasierMap // 动作参数
-	Echo   string    // 动作请求的 echo 字段
+	Comm   RequestComm // 接收动作请求的通信方式
+	Action string      // 动作名称
+	Params EasierMap   // 动作参数
+	Echo   string      // 动作请求的 echo 字段
 }
 
 func validateRequestMap(m EasierMap) error {
@@ -32,7 +47,7 @@ func validateRequestMap(m EasierMap) error {
 	return nil
 }
 
-func parseRequestFromMap(m map[string]interface{}) (Request, error) {
+func parseRequestFromMap(m map[string]interface{}, reqComm RequestComm) (Request, error) {
 	em := EasierMapFromMap(m)
 	err := validateRequestMap(em)
 	if err != nil {
@@ -43,6 +58,7 @@ func parseRequestFromMap(m map[string]interface{}) (Request, error) {
 	params, _ := em.GetMap("params")
 	echo, _ := em.GetString("echo")
 	r := Request{
+		Comm:   reqComm,
 		Action: action,
 		Params: params,
 		Echo:   echo,
@@ -50,7 +66,7 @@ func parseRequestFromMap(m map[string]interface{}) (Request, error) {
 	return r, nil
 }
 
-func decodeRequest(actionBytes []byte, isBinary bool) (Request, error) {
+func decodeRequest(actionBytes []byte, isBinary bool, reqComm RequestComm) (Request, error) {
 	var actionRequestMap map[string]interface{}
 	if isBinary {
 		err := msgpack.Unmarshal(actionBytes, &actionRequestMap)
@@ -67,10 +83,10 @@ func decodeRequest(actionBytes []byte, isBinary bool) (Request, error) {
 		}
 		actionRequestMap = m
 	}
-	return parseRequestFromMap(actionRequestMap)
+	return parseRequestFromMap(actionRequestMap, reqComm)
 }
 
-func decodeRequestList(actionBytes []byte, isBinary bool) ([]Request, error) {
+func decodeRequestList(actionBytes []byte, isBinary bool, reqComm RequestComm) ([]Request, error) {
 	var actionRequestMapList []map[string]interface{}
 	if isBinary {
 		err := msgpack.Unmarshal(actionBytes, &actionRequestMapList)
@@ -96,7 +112,7 @@ func decodeRequestList(actionBytes []byte, isBinary bool) ([]Request, error) {
 	}
 	requests := make([]Request, 0, len(actionRequestMapList))
 	for _, actionRequestMap := range actionRequestMapList {
-		r, err := parseRequestFromMap(actionRequestMap)
+		r, err := parseRequestFromMap(actionRequestMap, reqComm)
 		if err != nil {
 			return nil, err
 		}
