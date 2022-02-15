@@ -18,20 +18,20 @@ const (
 // Event 包含所有类型事件的共同字段.
 type Event struct {
 	// lock       sync.RWMutex
-	ID         string `json:"id"`          // 事件 ID, 构造时自动生成
-	Impl       string `json:"impl"`        // OneBot 实现名称, 无需在构造时传入
-	Platform   string `json:"platform"`    // OneBot 实现平台名称, 无需在构造时传入
-	SelfID     string `json:"self_id"`     // 机器人自身 ID, 无需在构造时传入
-	Time       int64  `json:"time"`        // 事件发生时间 (Unix 时间戳), 单位: 秒
-	Type       string `json:"type"`        // 事件类型
-	DetailType string `json:"detail_type"` // 事件详细类型
-	SubType    string `json:"sub_type"`    // 事件子类型 (详细类型的下一级类型), 可为空
+	ID         string  `json:"id"`          // 事件 ID, 构造时自动生成
+	Impl       string  `json:"impl"`        // OneBot 实现名称, 无需在构造时传入
+	Platform   string  `json:"platform"`    // OneBot 实现平台名称, 无需在构造时传入
+	SelfID     string  `json:"self_id"`     // 机器人自身 ID, 无需在构造时传入
+	Time       float64 `json:"time"`        // 事件发生时间 (Unix 时间戳), 单位: 秒
+	Type       string  `json:"type"`        // 事件类型
+	DetailType string  `json:"detail_type"` // 事件详细类型
+	SubType    string  `json:"sub_type"`    // 事件子类型 (详细类型的下一级类型), 可为空
 }
 
 func makeEvent(time time.Time, type_ string, detailType string) Event {
 	return Event{
 		ID:         uuid.New().String(),
-		Time:       time.Unix(),
+		Time:       float64(time.UnixMicro()) / 1e6,
 		Type:       type_,
 		DetailType: detailType,
 	}
