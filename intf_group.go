@@ -33,8 +33,8 @@ type GroupMemberIncreaseNoticeEvent struct {
 }
 
 const (
-	GroupMemberIncreaseNoticeEventSubTypeJoin   = "join"   // 成员主动加群
-	GroupMemberIncreaseNoticeEventSubTypeInvite = "invite" // 成员被邀请入群
+	GroupMemberIncreaseNoticeEventSubTypeJoin   = "join"   // 成员主动加入
+	GroupMemberIncreaseNoticeEventSubTypeInvite = "invite" // 成员被邀请加入
 )
 
 // MakeGroupMemberIncreaseNoticeEvent 构造一个群成员增加通知事件.
@@ -56,8 +56,8 @@ type GroupMemberDecreaseNoticeEvent struct {
 }
 
 const (
-	GroupMemberDecreaseNoticeEventSubTypeLeave = "leave" // 成员主动退群
-	GroupMemberDecreaseNoticeEventSubTypeKick  = "kick"  // 成员被踢出群
+	GroupMemberDecreaseNoticeEventSubTypeLeave = "leave" // 成员主动退出
+	GroupMemberDecreaseNoticeEventSubTypeKick  = "kick"  // 成员被踢出
 )
 
 // MakeGroupMemberDecreaseNoticeEvent 构造一个群成员减少通知事件.
@@ -80,8 +80,8 @@ type GroupMessageDeleteNoticeEvent struct {
 }
 
 const (
-	GroupMessageDeleteNoticeEventSubTypeRecall = "recall" // 发送者主动撤回消息
-	GroupMessageDeleteNoticeEventSubTypeDelete = "delete" // 管理员删除消息
+	GroupMessageDeleteNoticeEventSubTypeRecall = "recall" // 发送者主动删除
+	GroupMessageDeleteNoticeEventSubTypeDelete = "delete" // 管理员删除
 )
 
 // MakeGroupMessageDeleteNoticeEvent 构造一个群消息删除通知事件.
