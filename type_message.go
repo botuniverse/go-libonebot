@@ -1,8 +1,47 @@
 package libonebot
 
 import (
+	"encoding/json"
 	"fmt"
+
+	"github.com/vmihailenco/msgpack/v5"
 )
+
+// Segment 表示一个消息段.
+type Segment struct {
+	Type string    // 消息段类型
+	Data EasierMap // 消息段数据
+}
+
+func (s Segment) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"type": s.Type,
+		"data": s.Data.Value(),
+	})
+}
+
+func (s Segment) MarshalMsgpack() ([]byte, error) {
+	return msgpack.Marshal(map[string]interface{}{
+		"type": s.Type,
+		"data": s.Data.Value(),
+	})
+}
+
+func segmentFromMap(m map[string]interface{}) (Segment, error) {
+	em := EasierMapFromMap(m)
+	t, _ := em.GetString("type")
+	if t == "" {
+		return Segment{}, fmt.Errorf("消息段 `type` 字段不存在或为空")
+	}
+	data, err := em.GetMap("data")
+	if err != nil {
+		data = EasierMapFromMap(make(map[string]interface{}))
+	}
+	return Segment{
+		Type: t,
+		Data: data,
+	}, nil
+}
 
 // Message 表示一条消息.
 type Message []Segment
