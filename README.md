@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/github/v/tag/botuniverse/go-libonebot.svg)](https://github.com/botuniverse/go-libonebot/releases)
 [![Go Reference](https://pkg.go.dev/badge/github.com/botuniverse/go-libonebot.svg)](https://pkg.go.dev/github.com/botuniverse/go-libonebot)
 
-Go LibOneBot 可以帮助 OneBot 实现者快速在新的聊天机器人平台实现 OneBot v12 接口标准。
+Go LibOneBot 可以帮助 OneBot 实现者快速在新的聊天机器人平台实现 [OneBot 12 接口标准](https://12.onebot.dev)。
 
 具体而言，Go LibOneBot 通过 `OneBot`、`Config`、`ActionMux`、`Event` 等类型的抽象，让 OneBot 实现者只需编写少量代码即可完成一个 OneBot 实现，而无需关心过多 OneBot 标准所定义的通信方式的细节。
 
