@@ -6,20 +6,20 @@ const (
 	ActionGetLatestEvents     = "get_latest_events"     // 获取最新事件列表 (仅 HTTP 通信方式支持)
 	ActionGetSupportedActions = "get_supported_actions" // 获取支持的动作列表
 
-	// OneBot 元信息相关动作
+	// 元动作
 	ActionGetStatus  = "get_status"  // 获取 OneBot 运行状态
 	ActionGetVersion = "get_version" // 获取 OneBot 版本信息
 
-	// 消息相关动作
+	// 消息动作
 	ActionSendMessage   = "send_message"   // 发送消息
 	ActionDeleteMessage = "delete_message" // 删除消息
 
-	// 用户相关动作
+	// 用户动作
 	ActionGetSelfInfo   = "get_self_info"   // 获取机器人自身信息
 	ActionGetUserInfo   = "get_user_info"   // 获取用户信息
 	ActionGetFriendList = "get_friend_list" // 获取好友列表
 
-	// 群相关动作
+	// 单级群组动作
 	ActionGetGroupInfo       = "get_group_info"        // 获取群信息
 	ActionGetGroupList       = "get_group_list"        // 获取群列表
 	ActionGetGroupMemberInfo = "get_group_member_info" // 获取群成员信息
@@ -32,7 +32,21 @@ const (
 	ActionSetGroupAdmin      = "set_group_admin"       // 设置群管理员
 	ActionUnsetGroupAdmin    = "unset_group_admin"     // 取消群管理员
 
-	// 文件相关动作
+	// 两级群组动作
+	ActionGetGuildInfo         = "get_guild_info"          // 获取群组信息
+	ActionGetGuildList         = "get_guild_list"          // 获取群组列表
+	ActionSetGuildName         = "set_guild_name"          // 设置群组名称
+	ActionGetGuildMemberInfo   = "get_guild_member_info"   // 获取群组成员信息
+	ActionGetGuildMemberList   = "get_guild_member_list"   // 获取群组成员列表
+	ActionLeaveGuild           = "leave_guild"             // 退出群组
+	ActionGetChannelInfo       = "get_channel_info"        // 获取频道信息
+	ActionGetChannelList       = "get_channel_list"        // 获取频道列表
+	ActionSetChannelName       = "set_channel_name"        // 设置频道名称
+	ActionGetChannelMemberInfo = "get_channel_member_info" // 获取频道成员信息
+	ActionGetChannelMemberList = "get_channel_member_list" // 获取频道成员列表
+	ActionLeaveChannel         = "leave_channel"           // 退出频道
+
+	// 文件动作
 	ActionUploadFile           = "upload_file"            // 上传文件
 	ActionUploadFileFragmented = "upload_file_fragmented" // 分片上传文件
 	ActionGetFile              = "get_file"               // 获取文件
