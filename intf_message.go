@@ -1,33 +1,10 @@
+// 消息接口
+
 package libonebot
 
-import (
-	"encoding/json"
-	"fmt"
+// 消息段
 
-	"github.com/vmihailenco/msgpack/v5"
-)
-
-// Segment 表示一个消息段.
-type Segment struct {
-	Type string    // 消息段类型
-	Data EasierMap // 消息段数据
-}
-
-func (s Segment) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]interface{}{
-		"type": s.Type,
-		"data": s.Data.Value(),
-	})
-}
-
-func (s Segment) MarshalMsgpack() ([]byte, error) {
-	return msgpack.Marshal(map[string]interface{}{
-		"type": s.Type,
-		"data": s.Data.Value(),
-	})
-}
-
-// SegTypeXxx 表示 OneBot 标准定义的核心消息段类型.
+// SegTypeXxx 表示 OneBot 标准定义的消息段类型.
 const (
 	SegTypeText       = "text"        // 纯文本消息段
 	SegTypeMention    = "mention"     // 提及 (即 @) 消息段
@@ -40,22 +17,6 @@ const (
 	SegTypeLocation   = "location"    // 位置消息段
 	SegTypeReply      = "reply"       // 回复消息段
 )
-
-func segmentFromMap(m map[string]interface{}) (Segment, error) {
-	em := EasierMapFromMap(m)
-	t, _ := em.GetString("type")
-	if t == "" {
-		return Segment{}, fmt.Errorf("消息段 `type` 字段不存在或为空")
-	}
-	data, err := em.GetMap("data")
-	if err != nil {
-		data = EasierMapFromMap(make(map[string]interface{}))
-	}
-	return Segment{
-		Type: t,
-		Data: data,
-	}, nil
-}
 
 func (s *Segment) tryMerge(next Segment) bool {
 	switch s.Type {
@@ -157,3 +118,10 @@ func ReplySegment(messageID string, userID string) Segment {
 		"user_id":    userID,
 	})
 }
+
+// 消息动作
+
+const (
+	ActionSendMessage   = "send_message"   // 发送消息
+	ActionDeleteMessage = "delete_message" // 删除消息
+)
