@@ -3,6 +3,7 @@ package libonebot
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"sync"
 	"time"
 
@@ -31,6 +32,10 @@ type OneBot struct {
 	wg     *sync.WaitGroup
 }
 
+var (
+	implPlatformRegex = regexp.MustCompile(`^[a-z][\-a-z0-9]*(\.[\-a-z0-9]+)*$`)
+)
+
 // NewOneBot 创建一个新的 OneBot 实例.
 //
 // 参数:
@@ -42,8 +47,14 @@ func NewOneBot(impl string, platform string, selfID string, config *Config) *One
 	if impl == "" {
 		panic("必须提供 OneBot 实现名称")
 	}
+	if !implPlatformRegex.MatchString(impl) {
+		panic("OneBot 实现名称不合法")
+	}
 	if platform == "" {
 		panic("必须提供 OneBot 实现平台名称")
+	}
+	if !implPlatformRegex.MatchString(platform) {
+		panic("OneBot 实现平台名称不合法")
 	}
 	if selfID == "" {
 		panic("必须提供 OneBot 实例对应的机器人自身 ID")
