@@ -34,9 +34,9 @@ func (comm *wsCommCommon) pushEvent(conn *websocket.Conn, connWriteLock *sync.Mu
 
 type wsComm struct {
 	wsCommCommon
-	config      ConfigCommWS
-	addr        string
-	accessToken string
+	config     ConfigCommWS
+	addr       string
+	authorizer *httpAuthorizer
 }
 
 var wsUpgrader = websocket.Upgrader{
@@ -49,12 +49,10 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	comm.ob.Logger.Debugf("收到来自 %v 的 WebSocket (%v) 连接请求", r.RemoteAddr, comm.addr)
 
 	// authorization
-	if comm.accessToken != "" {
-		if r.Header.Get("Authorization") != "Bearer "+comm.accessToken {
-			comm.ob.Logger.Errorf("请求头中的 Authorization 不匹配")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+	if !comm.authorizer.authorize(r) {
+		comm.ob.Logger.Errorf("请求鉴权失败")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
@@ -118,7 +116,9 @@ func commRunWS(c ConfigCommWS, ob *OneBot, ctx context.Context, wg *sync.WaitGro
 		wsCommCommon: wsCommCommon{ob: ob},
 		config:       c,
 		addr:         addr,
-		accessToken:  c.AccessToken,
+		authorizer: &httpAuthorizer{
+			accessToken: c.AccessToken,
+		},
 	}
 
 	mux := http.NewServeMux()

@@ -20,7 +20,7 @@ import (
 type httpComm struct {
 	ob               *OneBot
 	config           ConfigCommHTTP
-	accessToken      string
+	authorizer       *httpAuthorizer
 	eventEnabled     bool
 	eventBufferSize  uint32
 	latestEvents     []marshaledEvent
@@ -39,12 +39,10 @@ func (comm *httpComm) handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// authorization
-	if comm.accessToken != "" {
-		if r.Header.Get("Authorization") != "Bearer "+comm.accessToken {
-			comm.ob.Logger.Errorf("请求头中的 Authorization 不匹配")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+	if !comm.authorizer.authorize(r) {
+		comm.ob.Logger.Errorf("请求鉴权失败")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
 	var isBinary bool
@@ -162,9 +160,11 @@ func commRunHTTP(c ConfigCommHTTP, ob *OneBot, ctx context.Context, wg *sync.Wai
 	ob.Logger.Infof("正在启动 HTTP (%v)...", addr)
 
 	comm := &httpComm{
-		ob:               ob,
-		config:           c,
-		accessToken:      c.AccessToken,
+		ob:     ob,
+		config: c,
+		authorizer: &httpAuthorizer{
+			accessToken: c.AccessToken,
+		},
 		eventEnabled:     c.EventEnabled,
 		eventBufferSize:  c.EventBufferSize,
 		latestEvents:     make([]marshaledEvent, 0),
