@@ -1,3 +1,6 @@
+// OneBot Connect - 数据协议 - 事件
+// https://12.onebot.dev/connect/data-protocol/event/
+
 package libonebot
 
 import (

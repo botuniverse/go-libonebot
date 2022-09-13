@@ -1,8 +1,9 @@
-// 文件接口
+// 接口定义 - 文件接口
 
 package libonebot
 
 // 文件动作
+// https://12.onebot.dev/interface/file/actions/
 
 const (
 	ActionUploadFile           = "upload_file"            // 上传文件

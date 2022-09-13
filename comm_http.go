@@ -1,3 +1,6 @@
+// OneBot Connect - 通信方式 - HTTP
+// https://12.onebot.dev/connect/communication/http/
+
 package libonebot
 
 import (

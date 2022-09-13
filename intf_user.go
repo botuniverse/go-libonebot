@@ -1,10 +1,11 @@
-// 单用户接口
+// 接口定义 - 单用户接口
 
 package libonebot
 
 import "time"
 
 // 用户消息事件
+// https://12.onebot.dev/interface/user/message-events/
 
 // PrivateMessageEvent 表示一个私聊消息事件.
 type PrivateMessageEvent struct {
@@ -21,6 +22,7 @@ func MakePrivateMessageEvent(time time.Time, messageID string, message Message, 
 }
 
 // 用户通知事件
+// https://12.onebot.dev/interface/user/notice-events/
 
 // FriendIncreaseNoticeEvent 表示一个好友增加通知事件.
 type FriendIncreaseNoticeEvent struct {
@@ -67,6 +69,7 @@ func MakePrivateMessageDeleteNoticeEvent(time time.Time, messageID string, userI
 }
 
 // 用户动作
+// https://12.onebot.dev/interface/user/actions/
 
 const (
 	ActionGetSelfInfo   = "get_self_info"   // 获取机器人自身信息

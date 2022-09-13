@@ -1,3 +1,6 @@
+// OneBot Connect - 通信方式 - 反向 WebSocket
+// https://12.onebot.dev/connect/communication/websocket-reverse/
+
 package libonebot
 
 import (

@@ -1,3 +1,6 @@
+// OneBot Connect - 通信方式 - HTTP Webhook
+// https://12.onebot.dev/connect/communication/http-webhook/
+
 package libonebot
 
 import (

@@ -1,8 +1,9 @@
-// 消息接口
+// 接口定义 - 消息接口
 
 package libonebot
 
 // 消息段
+// https://12.onebot.dev/interface/message/segments/
 
 // SegTypeXxx 表示 OneBot 标准定义的消息段类型.
 const (
@@ -120,6 +121,7 @@ func ReplySegment(messageID string, userID string) Segment {
 }
 
 // 消息动作
+// https://12.onebot.dev/interface/message/actions/
 
 const (
 	ActionSendMessage   = "send_message"   // 发送消息

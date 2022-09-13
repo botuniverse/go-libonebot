@@ -1,10 +1,11 @@
-// 单级群组接口
+// 接口定义 - 单级群组接口
 
 package libonebot
 
 import "time"
 
 // 群消息事件
+// https://12.onebot.dev/interface/group/message-events/
 
 // GroupMessageEvent 表示一个群消息事件.
 type GroupMessageEvent struct {
@@ -23,6 +24,7 @@ func MakeGroupMessageEvent(time time.Time, messageID string, message Message, al
 }
 
 // 群通知事件
+// https://12.onebot.dev/interface/group/notice-events/
 
 // GroupMemberIncreaseNoticeEvent 表示一个群成员增加通知事件.
 type GroupMemberIncreaseNoticeEvent struct {
@@ -96,6 +98,7 @@ func MakeGroupMessageDeleteNoticeEvent(time time.Time, groupID string, messageID
 }
 
 // 群动作
+// https://12.onebot.dev/interface/group/actions/
 
 const (
 	ActionGetGroupInfo       = "get_group_info"        // 获取群信息

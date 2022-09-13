@@ -1,10 +1,11 @@
-// 两级群组接口
+// 接口定义 - 两级群组接口
 
 package libonebot
 
 import "time"
 
 // 群组消息事件
+// https://12.onebot.dev/interface/guild/message-events/
 
 // ChannelMessageEvent 表示一个频道消息事件.
 type ChannelMessageEvent struct {
@@ -25,6 +26,7 @@ func MakeChannelMessageEvent(time time.Time, messageID string, message Message, 
 }
 
 // 群组通知事件
+// https://12.onebot.dev/interface/guild/notice-events/
 
 // GuildMemberIncreaseNoticeEvent 表示一个群组成员增加通知事件.
 type GuildMemberIncreaseNoticeEvent struct {
@@ -186,6 +188,7 @@ func MakeChannelDeleteNoticeEvent(time time.Time, guildID string, channelID stri
 }
 
 // 群组动作
+// https://12.onebot.dev/interface/guild/actions/
 
 const (
 	ActionGetGuildInfo         = "get_guild_info"          // 获取群组信息

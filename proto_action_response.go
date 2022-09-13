@@ -1,3 +1,6 @@
+// OneBot Connect - 数据协议 - 动作响应
+// https://12.onebot.dev/connect/data-protocol/action-response/
+
 package libonebot
 
 import (

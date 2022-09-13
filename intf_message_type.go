@@ -1,3 +1,6 @@
+// 接口定义 - 消息接口 - 消息数据类型
+// https://12.onebot.dev/interface/message/type/
+
 package libonebot
 
 import (

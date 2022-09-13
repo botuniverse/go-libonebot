@@ -1,10 +1,11 @@
-// 元接口
+// 接口定义 - 元接口
 
 package libonebot
 
 import "time"
 
 // 元事件
+// https://12.onebot.dev/interface/meta/events/
 
 // HeartbeatMetaEvent 表示一个心跳元事件.
 type HeartbeatMetaEvent struct {
@@ -23,6 +24,7 @@ func MakeHeartbeatMetaEvent(time time.Time, interval int64, status interface{}) 
 }
 
 // 元动作
+// https://12.onebot.dev/interface/meta/actions/
 
 const (
 	// LibOneBot 自动处理的特殊元动作
