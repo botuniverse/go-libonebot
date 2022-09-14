@@ -17,11 +17,10 @@ const (
 
 // OneBot 表示一个 OneBot 实例.
 type OneBot struct {
-	Impl     string
-	Platform string
-	SelfID   string
-	Config   *Config
-	Logger   *logrus.Logger
+	Impl   string
+	Self   *Self // 机器人自身标识, 多机器人账号复用 OneBot 对象时为 nil
+	Config *Config
+	Logger *logrus.Logger
 
 	eventListenChans     []chan marshaledEvent
 	eventListenChansLock *sync.RWMutex
@@ -40,34 +39,57 @@ var (
 //
 // 参数:
 //   impl: OneBot 实现名称, 不能为空
-//   platform: OneBot 实现平台名称, 不能为空
-//   selfID: OneBot 实例对应的机器人自身 ID, 不能为空
+//   self: OneBot 实例对应的机器人自身标识, 不能为 nil
 //   config: OneBot 配置, 不能为 nil
-func NewOneBot(impl string, platform string, selfID string, config *Config) *OneBot {
+func NewOneBot(impl string, self *Self, config *Config) *OneBot {
 	if impl == "" {
 		panic("必须提供 OneBot 实现名称")
 	}
 	if !implPlatformRegex.MatchString(impl) {
 		panic("OneBot 实现名称不合法")
 	}
-	if platform == "" {
-		panic("必须提供 OneBot 实现平台名称")
+	if self == nil {
+		panic("必须提供机器人自身标识")
 	}
-	if !implPlatformRegex.MatchString(platform) {
-		panic("OneBot 实现平台名称不合法")
+	if self.Platform == "" {
+		panic("必须提供机器人平台名称")
 	}
-	if selfID == "" {
-		panic("必须提供 OneBot 实例对应的机器人自身 ID")
+	if !implPlatformRegex.MatchString(self.Platform) {
+		panic("机器人平台名称不合法")
+	}
+	if self.UserID == "" {
+		panic("必须提供 OneBot 实例对应的机器人用户 ID")
 	}
 	if config == nil {
 		panic("必须提供 OneBot 配置")
 	}
+	return newOneBotUnchecked(impl, self, config)
+}
+
+// NewOneBotMultiSelf 创建一个新的多机器人账号复用的 OneBot 实例.
+//
+// 参数:
+//   impl: OneBot 实现名称, 不能为空
+//   config: OneBot 配置, 不能为 nil
+func NewOneBotMultiSelf(impl string, config *Config) *OneBot {
+	if impl == "" {
+		panic("必须提供 OneBot 实现名称")
+	}
+	if !implPlatformRegex.MatchString(impl) {
+		panic("OneBot 实现名称不合法")
+	}
+	if config == nil {
+		panic("必须提供 OneBot 配置")
+	}
+	return newOneBotUnchecked(impl, nil, config)
+}
+
+func newOneBotUnchecked(impl string, self *Self, config *Config) *OneBot {
 	return &OneBot{
-		Impl:     impl,
-		Platform: platform,
-		SelfID:   selfID,
-		Config:   config,
-		Logger:   logrus.New(),
+		Impl:   impl,
+		Self:   self,
+		Config: config,
+		Logger: logrus.New(),
 
 		eventListenChans:     make([]chan marshaledEvent, 0),
 		eventListenChansLock: &sync.RWMutex{},
@@ -102,7 +124,7 @@ func (ob *OneBot) Shutdown() {
 
 // GetUserAgent 获取 OneBot 实例的 User-Agent.
 func (ob *OneBot) GetUserAgent() string {
-	return fmt.Sprintf("OneBot/%v (%v) LibOneBot/%v", OneBotVersion, ob.Platform, Version)
+	return fmt.Sprintf("OneBot/%v LibOneBot/%v", OneBotVersion, Version)
 }
 
 func (ob *OneBot) startCommMethods(ctx context.Context) {
