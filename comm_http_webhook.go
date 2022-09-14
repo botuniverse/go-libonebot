@@ -31,8 +31,6 @@ func (comm *httpWebhookComm) post(event marshaledEvent) {
 	req.Header.Set("User-Agent", comm.ob.GetUserAgent())
 	req.Header.Set("X-OneBot-Version", OneBotVersion)
 	req.Header.Set("X-Impl", comm.ob.Impl)
-	req.Header.Set("X-Platform", comm.ob.Platform)
-	req.Header.Set("X-Self-ID", comm.ob.SelfID)
 
 	resp, err := comm.httpClient.Do(req)
 	if err != nil {
