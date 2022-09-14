@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/tevino/abool/v2 v2.1.0
 	github.com/tidwall/gjson v1.14.1

@@ -7,6 +7,7 @@ import (
 	"errors"
 
 	"github.com/botuniverse/go-libonebot/utils"
+	"github.com/mitchellh/mapstructure"
 	"github.com/tidwall/gjson"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -30,41 +31,48 @@ type Request struct {
 	Comm   RequestComm // 接收动作请求的通信方式
 	Action string      // 动作名称
 	Params EasierMap   // 动作参数
-	Echo   string      // 动作请求的 echo 字段
+	Echo   string      // 动作请求的 echo 字段, 用户未指定时为空字符串
+	Self   *Self       // 机器人自身标识, 用户未指定时为 nil
 }
 
-func validateRequestMap(m EasierMap) error {
-	if action, err := m.GetString("action"); err != nil {
-		return errors.New("`action` 字段不存在或类型错误")
-	} else if action == "" {
-		return errors.New("`action` 字段为空")
-	}
-	if _, err := m.GetMap("params"); err != nil {
-		return errors.New("`params` 字段不存在或类型错误")
-	}
-	_, err1 := m.Get("echo")
-	_, err2 := m.GetString("echo")
-	if err1 == nil && err2 != nil {
-		return errors.New("`echo` 字段类型错误")
-	}
-	return nil
-}
-
-func parseRequestFromMap(m map[string]interface{}, reqComm RequestComm) (Request, error) {
+func parseRequestFromMap(m map[string]interface{}, reqComm RequestComm) (r Request, err error) {
 	em := EasierMapFromMap(m)
-	err := validateRequestMap(em)
+	action, err := em.GetString("action")
 	if err != nil {
-		return Request{}, err
+		err = errors.New("`action` 字段不存在或类型错误")
+		return
+	} else if action == "" {
+		err = errors.New("`action` 字段为空")
+		return
 	}
-
-	action, _ := em.GetString("action")
-	params, _ := em.GetMap("params")
-	echo, _ := em.GetString("echo")
-	r := Request{
+	params, err := em.GetMap("params")
+	if err != nil {
+		err = errors.New("`params` 字段不存在或类型错误")
+		return
+	}
+	_, err1 := em.Get("echo")
+	echo, err2 := em.GetString("echo")
+	if err1 == nil && err2 != nil {
+		err = errors.New("`echo` 字段类型错误")
+		return
+	}
+	var self *Self
+	self_raw, err_exist := em.Get("self")
+	if err_exist == nil {
+		tmp := Self{}
+		err = mapstructure.Decode(self_raw, &tmp)
+		if err != nil || tmp.Platform == "" || tmp.UserID == "" {
+			err = errors.New("`self` 字段类型错误")
+			return
+		}
+		self = &tmp
+	}
+	r = Request{
 		Comm:   reqComm,
 		Action: action,
 		Params: params,
 		Echo:   echo,
+		Self:   self,
 	}
 	return r, nil
 }
