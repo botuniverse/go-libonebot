@@ -4,11 +4,16 @@ import "encoding/json"
 
 // Push 向与 OneBot 实例连接的接受端推送一个事件.
 func (ob *OneBot) Push(event AnyEvent) bool {
+	return ob.PushWithSelf(event, ob.Self)
+}
+
+// PushWithSelf 向与 OneBot 实例连接的接受端推送一个事件, 并指定收到事件的机器人自身标识.
+func (ob *OneBot) PushWithSelf(event AnyEvent, self *Self) bool {
 	if event == nil {
 		ob.Logger.Errorf("事件为空")
 		return false
 	}
-	if err := event.tryFixUp(ob.Impl, ob.Platform, ob.SelfID); err != nil {
+	if err := event.tryFixUp(ob.Impl, self); err != nil {
 		ob.Logger.Errorf("事件无效, 错误: %v", err)
 		return false
 	}

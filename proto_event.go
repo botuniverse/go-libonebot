@@ -21,14 +21,13 @@ const (
 // Event 包含所有类型事件的共同字段.
 type Event struct {
 	// lock       sync.RWMutex
-	ID         string  `json:"id"`          // 事件 ID, 构造时自动生成
-	Impl       string  `json:"impl"`        // OneBot 实现名称, 无需在构造时传入
-	Platform   string  `json:"platform"`    // OneBot 实现平台名称, 无需在构造时传入
-	SelfID     string  `json:"self_id"`     // 机器人自身 ID, 无需在构造时传入
-	Time       float64 `json:"time"`        // 事件发生时间 (Unix 时间戳), 单位: 秒
-	Type       string  `json:"type"`        // 事件类型
-	DetailType string  `json:"detail_type"` // 事件详细类型
-	SubType    string  `json:"sub_type"`    // 事件子类型 (详细类型的下一级类型), 可为空
+	ID         string  `json:"id"`             // 事件 ID, 构造时自动生成
+	Impl       string  `json:"impl"`           // OneBot 实现名称, 无需在构造时传入
+	Time       float64 `json:"time"`           // 事件发生时间 (Unix 时间戳), 单位: 秒
+	Type       string  `json:"type"`           // 事件类型
+	DetailType string  `json:"detail_type"`    // 事件详细类型
+	SubType    string  `json:"sub_type"`       // 事件子类型 (详细类型的下一级类型), 可为空
+	Self       *Self   `json:"self,omitempty"` // 机器人自身标识, 仅用于非元事件, 无需在构造时传入
 }
 
 func makeEvent(time time.Time, type_ string, detailType string) Event {
@@ -43,7 +42,7 @@ func makeEvent(time time.Time, type_ string, detailType string) Event {
 // AnyEvent 是所有事件对象共同实现的接口.
 type AnyEvent interface {
 	Name() string
-	tryFixUp(impl string, platform string, selfID string) error
+	tryFixUp(impl string, self *Self) error
 }
 
 // Name 返回事件名称.
@@ -53,7 +52,7 @@ func (e *Event) Name() string {
 	return e.Type + "." + e.DetailType
 }
 
-func (e *Event) tryFixUp(impl string, platform string, selfID string) error {
+func (e *Event) tryFixUp(impl string, self *Self) error {
 	// e.lock.Lock()
 	// defer e.lock.Unlock()
 	if e.Time == 0 {
@@ -65,11 +64,19 @@ func (e *Event) tryFixUp(impl string, platform string, selfID string) error {
 	if e.DetailType == "" {
 		return errors.New("`detail_type` 字段值无效")
 	}
-	e.Impl = impl         // overwrite impl field directly
-	e.Platform = platform // overwrite platform field directly
-	if e.SelfID == "" {
-		e.SelfID = selfID
+	if e.Type == EventTypeMeta {
+		if e.Self != nil {
+			return errors.New("元事件中不应包含 `self` 字段")
+		}
+	} else {
+		if self != nil {
+			// prefer `self` passed in as argument
+			e.Self = self
+		} else if e.Self == nil {
+			return errors.New("非元事件中必须包含 `self` 字段")
+		}
 	}
+	e.Impl = impl // overwrite impl field directly
 	return nil
 }
 
