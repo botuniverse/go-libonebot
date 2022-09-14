@@ -14,8 +14,13 @@ func Example_1() {
 
 	// 创建空 Config
 	config := &libob.Config{}
+	// 创建机器人自身标识
+	self := &libob.Self{
+		Platform: "nothing",
+		UserID:   "id_of_bot",
+	}
 	// 创建 OneBot 实例
-	ob := libob.NewOneBot("go_onebot_nothing", "nothing", "id_of_bot", config)
+	ob := libob.NewOneBot("go-onebot-nothing", self, config)
 	// 运行 OneBot 实例
 	ob.Run()
 }
@@ -42,17 +47,21 @@ func Example_3() {
 		config *MyConfig
 	}
 
-	const Impl = "go_onebot_tg"
+	const Impl = "go-onebot-tg"
 	const Platform = "tg"
 
 	config := &MyConfig{ /* ... */ }
+	self := &libob.Self{
+		Platform: Platform,
+		UserID:   config.SelfID,
+	}
 	ob := &MyOneBot{
-		OneBot: libob.NewOneBot(Impl, Platform, config.SelfID, &config.Config),
+		OneBot: libob.NewOneBot(Impl, self, &config.Config),
 		config: config,
 	}
 }
 
-const Platform = "my_platform"
+const PlatformPrefix = "myplat"
 
 func Example_4() {
 	// 示例: 使用 ActionMux 注册动作处理器
@@ -62,14 +71,14 @@ func Example_4() {
 	// 注册 get_status 动作处理函数
 	mux.HandleFunc(libob.ActionGetStatus, func(w libob.ResponseWriter, r *libob.Request) {
 		w.WriteData(map[string]interface{}{
-			"good":                      true,
-			"online":                    true,
-			Platform + "special_status": "元气满满", // 扩展动作响应
+			"good":                            true,
+			"online":                          true,
+			PlatformPrefix + "special_status": "元气满满", // 扩展动作响应
 		})
 	})
 
-	// 注册 my_platform.some_action 扩展动作处理函数
-	mux.HandleFunc(Platform+".some_action", func(w libob.ResponseWriter, r *libob.Request) {
+	// 注册 myplat.some_action 扩展动作处理函数
+	mux.HandleFunc(PlatformPrefix+".some_action", func(w libob.ResponseWriter, r *libob.Request) {
 		w.WriteData("It works!") // 返回一个字符串 (返回什么都行)
 	})
 
@@ -87,7 +96,7 @@ func Example_5() {
 		if !ok {
 			return
 		}
-		nocache, ok := p.GetBool(Platform + ".nocache") // 获取扩展参数
+		nocache, ok := p.GetBool(PlatformPrefix + ".nocache") // 获取扩展参数
 		w.WriteData(map[string]interface{}{
 			"user_id":  userID,
 			"nickname": userID,
@@ -110,7 +119,7 @@ func Example_6() {
 	// 构造消息的替代表示
 	alt_message := "@some_user 你好啊～"
 	// 构造事件对象
-	event := libob.MakePrivateMessageEvent(time.Now(), messageID, message, alt_message, ob.SelfID)
+	event := libob.MakePrivateMessageEvent(time.Now(), messageID, message, alt_message, "sender_id")
 	// 推送事件
 	ob.Push(&event)
 }
@@ -122,7 +131,7 @@ func Example_7() {
 		libob.GroupMessageEvent // 嵌入标准事件
 
 		// 扩展字段
-		Anonymous string `json:"my_platform.anonymous"`
+		Anonymous string `json:"myplat.anonymous"`
 	}
 
 	event := MyGroupMessageEvent{
@@ -130,4 +139,26 @@ func Example_7() {
 		Anonymous:         "齐天大圣",
 	}
 	ob.Push(&event)
+}
+
+func Example_8() {
+	// 示例: 多机器人账号复用 OneBot 对象
+
+	config := &libob.Config{ /* ... */ }
+	ob := libob.NewOneBotMultiSelf("go-onebot-multi", config)
+
+	mux := libob.NewActionMux()
+	mux.HandleFunc(libob.ActionSendMessage, func(w libob.ResponseWriter, r *libob.Request) {
+		// 通过 r.Self 获得用户指定的机器人自身标识
+		_ = r.Self.Platform
+		_ = r.Self.UserID
+	})
+
+	ob.Handle(mux)
+	go ob.Run()
+
+	event1 := libob.MakeFriendIncreaseNoticeEvent(time.Now(), "friend_id")
+	ob.PushWithSelf(&event1, &libob.Self{Platform: "myplat1", UserID: "bot_id_1"})
+	event2 := libob.MakeFriendIncreaseNoticeEvent(time.Now(), "friend_id")
+	ob.PushWithSelf(&event2, &libob.Self{Platform: "myplat1", UserID: "bot_id_2"})
 }
