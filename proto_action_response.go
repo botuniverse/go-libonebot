@@ -30,6 +30,7 @@ const (
 	RetCodeBadSegmentData         = 10006 // 无效的消息段参数 (参数缺失或参数类型错误)
 	RetCodeUnsupportedSegmentData = 10007 // 不支持的消息段参数 (OneBot 实现没有实现该参数的语义)
 	RetCodeWhoAmI                 = 10101 // 未指定机器人账号 (OneBot 实现在单个 OneBot Connect 连接上支持多个机器人账号，但动作请求未指定要使用的账号)
+	RetCodeUnknownSelf            = 10102 // 不存在的机器人账号 (动作请求指定的机器人账号不存在)
 
 	// 动作处理器错误 (类似 HTTP 的 5xx 服务端错误)
 	RetCodeHandlerErrorBase     = 20000
