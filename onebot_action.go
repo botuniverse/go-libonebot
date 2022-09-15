@@ -47,6 +47,12 @@ func (ob *OneBot) handleRequest(r *Request) (resp Response) {
 		return
 	}
 
+	if ob.Self != nil && r.Self != nil && (ob.Self.Platform != r.Self.Platform || ob.Self.UserID != r.Self.UserID) {
+		err := fmt.Errorf("指定的机器人账号 (平台: `%v`, 用户 ID: `%v`) 不存在", r.Self.Platform, r.Self.UserID)
+		w.WriteFailed(RetCodeUnknownSelf, err)
+		return
+	}
+
 	ob.Logger.Debugf("动作请求 `%v` 开始处理", r.Action)
 	ob.actionHandler.HandleAction(w, r)
 	if resp.Status == statusOK {
