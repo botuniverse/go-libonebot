@@ -149,6 +149,10 @@ func Example_8() {
 
 	mux := libob.NewActionMux()
 	mux.HandleFunc(libob.ActionSendMessage, func(w libob.ResponseWriter, r *libob.Request) {
+		if r.Self == nil {
+			w.WriteFailed(libob.RetCodeWhoAmI, fmt.Errorf("未指定机器人账号"))
+			return
+		}
 		// 通过 r.Self 获得用户指定的机器人自身标识
 		_ = r.Self.Platform
 		_ = r.Self.UserID
