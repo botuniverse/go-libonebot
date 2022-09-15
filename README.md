@@ -14,6 +14,10 @@ Go LibOneBot 可以帮助 OneBot 实现者快速在新的聊天机器人平台�
 
 使用方法请参考 [Examples](onebot_examples_test.go)、[richardchien/go-onebot-repl](https://github.com/richardchien/go-onebot-repl)（通过交互命令行输入“私聊消息”的 OneBot 实现）和 [Godoc 文档](https://pkg.go.dev/github.com/botuniverse/go-libonebot)。
 
+## 局限
+
+Go LibOneBot 不会提供很好的多机器人账号连接复用支持，如需此功能，请使用 [walle-core](https://github.com/onebot-walle/walle-core)。
+
 ## 致谢
 
 - 感谢 [@Mrs4s](https://github.com/Mrs4s) 的 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 让我有了用 Go 实现 LibOneBot 的念头
