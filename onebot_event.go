@@ -13,7 +13,7 @@ func (ob *OneBot) PushWithSelf(event AnyEvent, self *Self) bool {
 		ob.Logger.Errorf("事件为空")
 		return false
 	}
-	if err := event.tryFixUp(ob.Impl, self); err != nil {
+	if err := event.tryFixUp(self); err != nil {
 		ob.Logger.Errorf("事件无效, 错误: %v", err)
 		return false
 	}
