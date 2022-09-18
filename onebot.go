@@ -179,11 +179,7 @@ func (ob *OneBot) startHeartbeat(ctx context.Context) {
 			select {
 			case <-ticker.C:
 				ob.Logger.Debugf("扑通")
-				resp := ob.CallAction("get_status", nil)
-				if resp.Status != statusOK {
-					ob.Logger.Warnf("调用 `get_status` 动作失败, 错误: %v", resp.Message)
-				}
-				event := MakeHeartbeatMetaEvent(time.Now(), int64(ob.Config.Heartbeat.Interval), resp.Data)
+				event := MakeHeartbeatMetaEvent(time.Now(), int64(ob.Config.Heartbeat.Interval))
 				ob.Push(&event)
 			case <-ctx.Done():
 				ob.Logger.Infof("心跳停止")

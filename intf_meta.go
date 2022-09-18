@@ -10,15 +10,27 @@ import "time"
 // HeartbeatMetaEvent 表示一个心跳元事件.
 type HeartbeatMetaEvent struct {
 	MetaEvent
-	Interval int64       `json:"interval"` // 到下次心跳的间隔，单位: 毫秒
-	Status   interface{} `json:"status"`   // OneBot 状态, 与 get_status 动作响应数据一致
+	Interval int64 `json:"interval"` // 到下次心跳的间隔，单位: 毫秒
 }
 
 // MakeHeartbeatMetaEvent 构造一个心跳元事件.
-func MakeHeartbeatMetaEvent(time time.Time, interval int64, status interface{}) HeartbeatMetaEvent {
+func MakeHeartbeatMetaEvent(time time.Time, interval int64) HeartbeatMetaEvent {
 	return HeartbeatMetaEvent{
 		MetaEvent: MakeMetaEvent(time, "heartbeat"),
 		Interval:  interval,
+	}
+}
+
+// StatusUpdateMetaEvent 表示一个状态更新元事件.
+type StatusUpdateMetaEvent struct {
+	MetaEvent
+	Status interface{} `json:"status"` // OneBot 状态, 与 get_status 动作响应数据一致
+}
+
+// MakeStatusUpdateMetaEvent 构造一个状态更新元事件.
+func MakeStatusUpdateMetaEvent(time time.Time, status interface{}) StatusUpdateMetaEvent {
+	return StatusUpdateMetaEvent{
+		MetaEvent: MakeMetaEvent(time, "status_update"),
 		Status:    status,
 	}
 }
