@@ -31,8 +31,7 @@ func (comm *wsReverseComm) connectAndServe(ctx context.Context) {
 		header.Set("Authorization", "Bearer "+comm.accessToken)
 	}
 	header.Set("User-Agent", comm.ob.GetUserAgent())
-	header.Set("X-OneBot-Version", OneBotVersion)
-	header.Set("X-Impl", comm.ob.Impl)
+	header.Set("Sec-WebSocket-Protocol", OneBotVersion+"."+comm.ob.Impl)
 	conn, _, err := websocket.DefaultDialer.Dial(comm.url, header)
 	if err != nil {
 		comm.ob.Logger.Errorf("WebSocket Reverse (%v) 连接失败, 错误: %v", comm.url, err)
