@@ -16,7 +16,7 @@ Go LibOneBot 可以帮助 OneBot 实现者快速在新的聊天机器人平台�
 
 ## 局限
 
-Go LibOneBot 不会提供很好的多机器人账号连接复用支持，如需此功能，请使用 [walle-core](https://github.com/onebot-walle/walle-core)。
+Go LibOneBot 不会提供很好的多机器人账号连接复用支持，如需更好的支持，请使用 [walle-core](https://github.com/onebot-walle/walle-core)。
 
 ## 致谢
 
