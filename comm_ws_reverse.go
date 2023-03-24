@@ -38,14 +38,6 @@ func (comm *wsReverseComm) connectAndServe(ctx context.Context) {
 		return
 	}
 	comm.ob.Logger.Infof("WebSocket Reverse (%v) 连接成功", comm.url)
-	defer func() {
-		_ = comm.ob.connectHandles.DisConnect(comm.ob)
-	}()
-	err = comm.ob.connectHandles.OnConnect(comm.ob)
-	if err != nil {
-		comm.ob.Logger.Errorf("OnConnect failed : %v", err)
-		return
-	}
 	// protect concurrent writes to the same connection
 	connWriteLock := &sync.Mutex{}
 
@@ -144,21 +136,11 @@ func commRunWSReverse(c ConfigCommWSReverse, ob *OneBot, ctx context.Context, wg
 		comm.isShutdown.Set()
 	}()
 
-	n := 1
-
 	for {
-		if n > 1 {
-			err := ob.connectHandles.OnReconnect(ob)
-			if err != nil {
-				ob.Logger.Errorf("OnReconnect failed : %v", err)
-				return
-			}
-		}
 		comm.connectAndServe(ctx)
 		if comm.isShutdown.IsSet() {
 			break
 		}
-		n++
 		ob.Logger.Infof("WebSocket Reverse (%v) 将在 %v 秒后尝试重连", comm.url, c.ReconnectInterval)
 		time.Sleep(comm.reconnectInterval)
 	}
