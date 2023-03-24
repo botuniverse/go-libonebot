@@ -55,7 +55,7 @@ func Example_3() {
 		Platform: Platform,
 		UserID:   config.SelfID,
 	}
-	ob := &MyOneBot{
+	_ = &MyOneBot{
 		OneBot: libob.NewOneBot(Impl, self, &config.Config),
 		config: config,
 	}
@@ -96,7 +96,7 @@ func Example_5() {
 		if !ok {
 			return
 		}
-		nocache, ok := p.GetBool(PlatformPrefix + ".nocache") // 获取扩展参数
+		_, ok = p.GetBool(PlatformPrefix + ".nocache") // 获取扩展参数
 		w.WriteData(map[string]interface{}{
 			"user_id":  userID,
 			"nickname": userID,

@@ -15,20 +15,42 @@ const (
 	OneBotVersion = "12"    // OneBot 标准版本
 )
 
+type ConnectHandler func(bot *OneBot) error
+
+var (
+	defaultConnectHandler = func(bot *OneBot) error {
+		return nil
+	}
+	defaultConnectHandlers = &ConnectHandlers{
+		OnConnect:   defaultConnectHandler,
+		OnReconnect: defaultConnectHandler,
+		DisConnect:  defaultConnectHandler,
+	}
+)
+
+type ConnectHandlers struct {
+	OnConnect   ConnectHandler
+	OnReconnect ConnectHandler
+	DisConnect  ConnectHandler
+}
+
 // OneBot 表示一个 OneBot 实例.
 type OneBot struct {
-	Impl   string
-	Self   *Self // 机器人自身标识, 多机器人账号复用 OneBot 对象时为 nil
-	Config *Config
-	Logger *logrus.Logger
-
+	Impl                 string
+	Self                 *Self // 机器人自身标识, 多机器人账号复用 OneBot 对象时为 nil
+	Config               *Config
+	Logger               *logrus.Logger
 	eventListenChans     []chan marshaledEvent
 	eventListenChansLock *sync.RWMutex
-
-	actionHandler Handler
+	connectHandles       *ConnectHandlers
+	actionHandler        Handler
 
 	cancel context.CancelFunc
 	wg     *sync.WaitGroup
+}
+
+type Option struct {
+	connectHandles *ConnectHandlers
 }
 
 var (
@@ -38,10 +60,11 @@ var (
 // NewOneBot 创建一个新的 OneBot 实例.
 //
 // 参数:
-//   impl: OneBot 实现名称, 不能为空
-//   self: OneBot 实例对应的机器人自身标识, 不能为 nil
-//   config: OneBot 配置, 不能为 nil
-func NewOneBot(impl string, self *Self, config *Config) *OneBot {
+//
+//	impl: OneBot 实现名称, 不能为空
+//	self: OneBot 实例对应的机器人自身标识, 不能为 nil
+//	config: OneBot 配置, 不能为 nil
+func NewOneBot(impl string, self *Self, config *Config, options ...Option) *OneBot {
 	if impl == "" {
 		panic("必须提供 OneBot 实现名称")
 	}
@@ -63,14 +86,28 @@ func NewOneBot(impl string, self *Self, config *Config) *OneBot {
 	if config == nil {
 		panic("必须提供 OneBot 配置")
 	}
-	return newOneBotUnchecked(impl, self, config)
+	connectHandlers := defaultConnectHandlers
+	if len(options) > 0 {
+		connectHandlers = options[0].connectHandles
+		if connectHandlers.OnConnect == nil {
+			connectHandlers.OnConnect = defaultConnectHandler
+		}
+		if connectHandlers.OnReconnect == nil {
+			connectHandlers.OnReconnect = defaultConnectHandler
+		}
+		if connectHandlers.DisConnect == nil {
+			connectHandlers.DisConnect = defaultConnectHandler
+		}
+	}
+	return newOneBotUnchecked(impl, self, connectHandlers, config)
 }
 
 // NewOneBotMultiSelf 创建一个新的多机器人账号复用的 OneBot 实例.
 //
 // 参数:
-//   impl: OneBot 实现名称, 不能为空
-//   config: OneBot 配置, 不能为 nil
+//
+//	impl: OneBot 实现名称, 不能为空
+//	config: OneBot 配置, 不能为 nil
 func NewOneBotMultiSelf(impl string, config *Config) *OneBot {
 	if impl == "" {
 		panic("必须提供 OneBot 实现名称")
@@ -81,10 +118,10 @@ func NewOneBotMultiSelf(impl string, config *Config) *OneBot {
 	if config == nil {
 		panic("必须提供 OneBot 配置")
 	}
-	return newOneBotUnchecked(impl, nil, config)
+	return newOneBotUnchecked(impl, nil, defaultConnectHandlers, config)
 }
 
-func newOneBotUnchecked(impl string, self *Self, config *Config) *OneBot {
+func newOneBotUnchecked(impl string, self *Self, connectHandles *ConnectHandlers, config *Config) *OneBot {
 	return &OneBot{
 		Impl:   impl,
 		Self:   self,
@@ -94,7 +131,8 @@ func newOneBotUnchecked(impl string, self *Self, config *Config) *OneBot {
 		eventListenChans:     make([]chan marshaledEvent, 0),
 		eventListenChansLock: &sync.RWMutex{},
 
-		actionHandler: nil,
+		actionHandler:  nil,
+		connectHandles: connectHandles,
 
 		cancel: nil,
 		wg:     &sync.WaitGroup{},

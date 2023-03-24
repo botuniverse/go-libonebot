@@ -62,9 +62,17 @@ func (comm *wsComm) handle(w http.ResponseWriter, r *http.Request) {
 	}
 	comm.ob.Logger.Infof("WebSocket (%v) 连接成功", comm.addr)
 	defer conn.Close()
-
 	// protect concurrent writes to the same connection
 	connWriteLock := &sync.Mutex{}
+
+	err = comm.ob.connectHandles.OnConnect(comm.ob)
+	defer func() {
+		_ = comm.ob.connectHandles.DisConnect(comm.ob)
+	}()
+	if err != nil {
+		comm.ob.Logger.Errorf("OnConnect failed : %v", err)
+		return
+	}
 
 	isClosed := abool.New()
 	checkError := func(err error) bool {

@@ -85,6 +85,21 @@ type MetaEvent struct {
 	Event
 }
 
+type version struct {
+	Impl          string `json:"impl"`
+	Version       string `json:"version"`
+	OnebotVersion string `json:"onebot_version"`
+}
+
+type ConnectMetaEvent struct {
+	MetaEvent
+	Version version `json:"version"`
+}
+
+func MakeConnectMetaEvent(impl, v, onebotVersion string) ConnectMetaEvent {
+	return ConnectMetaEvent{MetaEvent: MakeMetaEvent(time.Now(), "connect"), Version: version{impl, v, onebotVersion}}
+}
+
 // MakeMetaEvent 构造一个元事件.
 func MakeMetaEvent(time time.Time, detailType string) MetaEvent {
 	return MetaEvent{
