@@ -4,6 +4,7 @@
 package libonebot
 
 import (
+	"context"
 	"errors"
 
 	"github.com/botuniverse/go-libonebot/utils"
@@ -28,11 +29,12 @@ type RequestComm struct {
 
 // Request 表示一个动作请求.
 type Request struct {
-	Comm   RequestComm // 接收动作请求的通信方式
-	Action string      // 动作名称
-	Params EasierMap   // 动作参数
-	Echo   string      // 动作请求的 echo 字段, 用户未指定时为空字符串
-	Self   *Self       // 机器人自身标识, 用户未指定时为 nil
+	Comm   RequestComm     // 接收动作请求的通信方式
+	Action string          // 动作名称
+	Params EasierMap       // 动作参数
+	Echo   string          // 动作请求的 echo 字段, 用户未指定时为空字符串
+	Self   *Self           // 机器人自身标识, 用户未指定时为 nil
+	Ctx    context.Context // 上下文控制
 }
 
 func parseRequestFromMap(m map[string]interface{}, reqComm RequestComm) (r Request, err error) {
