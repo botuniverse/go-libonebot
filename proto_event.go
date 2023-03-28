@@ -78,6 +78,21 @@ func (e *Event) tryFixUp(self *Self) error {
 	return nil
 }
 
+type VersionStruct struct {
+	Impl          string `json:"impl"`
+	Version       string `json:"version"`
+	OnebotVersion string `json:"onebot_version"`
+}
+
+type ConnectMetaEvent struct {
+	MetaEvent
+	Version VersionStruct `json:"version"`
+}
+
+func MakeConnectMetaEvent(impl, v, onebotVersion string) ConnectMetaEvent {
+	return ConnectMetaEvent{MetaEvent: MakeMetaEvent(time.Now(), "connect"), Version: VersionStruct{impl, v, onebotVersion}}
+}
+
 // 四种事件基本类型
 
 // MetaEvent 表示一个元事件.
