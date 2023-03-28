@@ -1,6 +1,7 @@
 package libonebot
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -22,8 +23,9 @@ func (ob *OneBot) Handle(handler Handler) {
 // CallAction 调用指定动作.
 //
 // 参数:
-//   action: 要调用的动作名称
-//   params: 动作参数, 若传入 nil 则实际动作参数为空 map
+//
+//	action: 要调用的动作名称
+//	params: 动作参数, 若传入 nil 则实际动作参数为空 map
 func (ob *OneBot) CallAction(action string, params map[string]interface{}) Response {
 	if params == nil {
 		params = make(map[string]interface{})
@@ -54,7 +56,22 @@ func (ob *OneBot) handleRequest(r *Request) (resp Response) {
 	}
 
 	ob.Logger.Debugf("动作请求 `%v` 开始处理", r.Action)
-	ob.actionHandler.HandleAction(w, r)
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	r.Ctx = ctx
+	go func() {
+		defer cancelFunc()
+		defer func() {
+			err := recover()
+			if err != nil {
+				if _, ok := err.(error); ok {
+					w.WriteFailed(RetCodeInternalHandlerError, err.(error))
+				}
+			}
+		}()
+		ob.actionHandler.HandleAction(w, r)
+	}()
+	<-ctx.Done()
+
 	if resp.Status == statusOK {
 		ob.Logger.Infof("动作请求 `%v` 处理成功", r.Action)
 	} else if resp.Status == statusFailed {
